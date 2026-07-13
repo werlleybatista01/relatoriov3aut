@@ -1,0 +1,46 @@
+{
+  "data_analise": "2026-07-13",
+  "arquivos_origem": {
+    "atualizar_index_github.py": {
+      "versao_detectada": "V8",
+      "sha256": "61372f227daa0b4356faf4836bdbe6bbfb6650bf65169fe131fb3c7940202a32",
+      "tamanho": 109836
+    },
+    "atualizar_index_github_v9.py": {
+      "versao_detectada": "V9",
+      "sha256": "2ee63100becae1153bee30bce45c7e21d10f525ac763c6b3bd74b0635883dfa0",
+      "tamanho": 125906
+    },
+    "index_automacao.html": {
+      "sha256": "54a840031280b8a841e967f756e4910d5d78ebf2f2d6146d0296657b93b8f5c3",
+      "tamanho": 486141,
+      "observacao": "Cópia local antiga; o config aponta a gravação para o repositório Git."
+    }
+  },
+  "estado_confirmado": {
+    "versao_executada": 8,
+    "ultima_acao": "sem_alteracao",
+    "ultimo_check": "2026-07-10T15:46:07",
+    "intervalo_tarefa_minutos": 5,
+    "classificacao_produtos_total": 504,
+    "classificacao_pendentes": 219,
+    "lock_legado_enviado": true
+  },
+  "classificacoes": {
+    "devolvivel": 66,
+    "uso_permanente": 86,
+    "consumo": 43,
+    "ignorar": 90,
+    "nao_classificado": 219
+  },
+  "config_chaves_detectadas": [
+    "ACCESS_PASSWORD",
+    "BACKUP_DIR",
+    "BACKUP_PATTERNS",
+    "FERRAMENTAS_CONTROLADAS",
+    "GIT_PUSH",
+    "INDEX_FILE",
+    "REPO_DIR"
+  ],
+  "seguranca": "Nenhum valor do config.env foi copiado."
+}

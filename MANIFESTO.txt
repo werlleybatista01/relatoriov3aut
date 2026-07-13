@@ -1,0 +1,62 @@
+DASHBOARD PROFISSIONAL DO ALMOXARIFADO
+Versão: 2.0.0
+Data: 13/07/2026
+Status: PRODUÇÃO
+
+ORIGEM CONFIRMADA
+- Script chamado pelos BATs: atualizar_index_github.py = V8.
+- V9 disponível separadamente.
+- Estado local: version 8.
+- Tarefa Windows: 5 minutos.
+- Index da pasta automacao: cópia antiga; a saída ativa vai para o repositório.
+- Cadastro V9: 504 produtos, 219 não classificados.
+
+PRINCIPAIS ARQUIVOS
+- index.html: casca da aplicação.
+- assets/css/style.css: estilos.
+- src/main.js: inicialização.
+- src/app.js: composição.
+- src/core/: utilitários e infraestrutura.
+- src/modules/: Home, Ferramentas, Botinas, Sacolas e relatórios.
+- src/services/: download e WhatsApp opcional.
+- data/dashboard-data.js: contrato gerado.
+- scripts/atualizar_dashboard.py: orquestrador modular.
+- scripts/legacy/atualizar_index_github_v9.py: regras V9 sanitizadas.
+- scripts/diagnosticar_ambiente.py: diagnóstico sem revelar segredos.
+- tests/: testes JavaScript e Python.
+- docs/: arquitetura, segurança, migração e estado confirmado.
+
+SEGURANÇA
+- Não contém config.env real.
+- Não contém banco Access.
+- Não contém logs ou lock reais.
+- Não contém index operacional com pessoas.
+- Não contém senhas, tokens ou valores do env.
+- Dados pessoais são pseudonimizados por padrão.
+- GIT_PUSH é bloqueado no modo de homologação.
+- O cadastro real de classificação é entregue em suplemento privado separado.
+
+PRODUÇÃO
+- Front-end modular publicado pelo GitHub Pages.
+- Atualizador grava somente dados pseudonimizados e planilha pública.
+- Envio ao GitHub permanece automático a cada 5 minutos.
+- Instalador preserva a configuração local, desativa a V8 e cria a tarefa V2.
+- Rollback reativa as tarefas anteriores sem apagar a automação legada.
+- WhatsApp direto permanece desativado no site público.
+
+ALTERAÇÃO BETA.3
+- src/modules/bags.js: novo painel inteligente exclusivo de Sacolas.
+- assets/css/style.css: layout executivo responsivo e componentes analíticos.
+- tests/core.test.js: teste da cobertura e meta de 90 dias.
+
+ALTERAÇÃO BETA.5
+- Visão geral de Sacolas sem filtros superiores.
+- Estoque atual destacado junto aos insights e à decisão recomendada.
+- Filtros preservados apenas nas telas analíticas.
+- Layout responsivo revisado.
+
+ALTERAÇÃO FINAL 2.0.0
+- Ponto de reposição de Sacolas corrigido para 90 dias.
+- Faixa segura somente acima de 120 dias.
+- Pacote de produção, troca segura do Agendador e rollback adicionados.
+- Artefatos públicos liberados no Git; dados privados continuam ignorados.

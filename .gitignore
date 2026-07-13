@@ -1,0 +1,30 @@
+# Credenciais e bancos privados
+config.env
+config.env.*
+*.mdb
+*.accdb
+
+# Arquivos privados de apoio à classificação
+classificacao_ferramentas.json
+produtos_pendentes_classificacao.csv
+
+# Os dois artefatos abaixo são públicos, pseudonimizados e versionados:
+# data/dashboard-data.js
+# downloads/relatorio_almoxarifado_<ano>.xlsx
+data/*.tmp
+downloads/*.tmp
+
+# Estado, lock e logs
+estado_atualizador*.json
+.atualizador*.lock
+*.log
+atualizacao_log.txt
+log.txt
+.migracao-dashboard-v2.json
+
+# Ambientes e caches
+__pycache__/
+*.pyc
+node_modules/
+.coverage
+.pytest_cache/

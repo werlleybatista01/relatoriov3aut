@@ -1,0 +1,33 @@
+AUTOMACAO DO DASHBOARD DO ALMOXARIFADO - VERSAO 2.0.0
+
+SE O GITHUB AINDA MOSTRAR O PAINEL ANTIGO
+
+1. Extraia todo o pacote dentro da pasta:
+   C:\Users\werlley.batista\Documents\GitHub\relatoriov3aut
+
+2. Execute PUBLICAR_E_INSTALAR.bat.
+
+Esse arquivo publica somente a lista revisada em ARQUIVOS_PUBLICACAO.txt. O
+config.env, o Access, os logs e a classificacao privada continuam fora do Git.
+
+SE O PAINEL V2 JA ESTIVER NO GITHUB
+
+1. Execute INICIAR_INSTALACAO.bat.
+
+2. Autorize a janela de administrador quando o Windows solicitar.
+
+3. Aguarde a mensagem INSTALACAO CONCLUIDA.
+
+O primeiro arquivo atualiza ou baixa automaticamente o repositorio em:
+C:\Users\werlley.batista\Documents\GitHub\relatoriov3aut
+
+O instalador reaproveita a senha e os caminhos do config.env antigo. Ele nao
+envia config.env, senha, banco Access, telefone ou nome real para o GitHub.
+
+Depois da instalacao, a tarefa Atualizar Dashboard Almoxarifado V2 verifica o
+backup fechado mais recente a cada 5 minutos. Quando os dados mudam, ela gera
+data/dashboard-data.js e a planilha, faz commit e envia ao GitHub. O codigo do
+painel nao e reescrito.
+
+Se for necessario voltar para a V8, execute restaurar_automacao_anterior.bat.
+As tarefas antigas sao apenas desativadas durante a migracao, nunca apagadas.
