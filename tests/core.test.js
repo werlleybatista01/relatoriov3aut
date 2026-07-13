@@ -15,6 +15,7 @@ import { demoDashboardData } from "../data/dashboard-data.demo.js";
 test("formatadores mantêm datas e somas previsíveis", () => {
   assert.equal(formatBrazilianDate("2026-07-10"), "10/07/2026");
   assert.equal(addDays("2026-07-10", 2), "2026-07-12");
+  assert.equal(addDays("2026-07-31", 1), "2026-08-01");
   assert.equal(recordYear({ Data_iso: "2025-03-01" }), 2025);
   assert.equal(sumQuantities([{ Qtde_num: 2 }, { Qtde_num: 3 }]), 5);
 });

@@ -20,6 +20,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -287,6 +288,37 @@ def serialize_payload_js(payload: Dict[str, Any]) -> str:
     )
 
 
+def _load_existing_payload(path: Path) -> Dict[str, Any] | None:
+    """Lê o payload JSON do módulo gerado anteriormente, quando disponível."""
+    if not path.exists():
+        return None
+    try:
+        content = path.read_text(encoding="utf-8")
+        match = re.search(
+            r"Object\.freeze\((\{.*\})\);\s*$",
+            content,
+            flags=re.DOTALL,
+        )
+        if not match:
+            return None
+        payload = json.loads(match.group(1))
+        return payload if isinstance(payload, dict) else None
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+
+
+def _payloads_equivalent_for_publish(
+    previous: Dict[str, Any],
+    current: Dict[str, Any],
+) -> bool:
+    """Ignora somente o relógio; mudanças reais e a nova data continuam válidas."""
+    previous_copy = json.loads(json.dumps(previous, ensure_ascii=False))
+    current_copy = json.loads(json.dumps(current, ensure_ascii=False))
+    previous_copy.get("metadata", {}).pop("generatedAt", None)
+    current_copy.get("metadata", {}).pop("generatedAt", None)
+    return previous_copy == current_copy
+
+
 def write_artifacts(
     payload: Dict[str, Any],
     operating_rows: List[Dict[str, Any]],
@@ -296,6 +328,17 @@ def write_artifacts(
 
     Retorna True somente quando pelo menos um artefato mudou.
     """
+    previous_payload = _load_existing_payload(DATA_FILE)
+    if (
+        previous_payload is not None
+        and DOWNLOAD_FILE.exists()
+        and _payloads_equivalent_for_publish(previous_payload, payload)
+    ):
+        legacy.log(
+            "Dados operacionais sem alteração. Artefatos preservados."
+        )
+        return False
+
     before = {
         DATA_FILE: _file_hash(DATA_FILE),
         DOWNLOAD_FILE: _file_hash(DOWNLOAD_FILE),

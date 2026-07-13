@@ -62,6 +62,52 @@ class PayloadTests(unittest.TestCase):
         self.assertIn("export const dashboardData", output)
         self.assertNotIn("SUA_SENHA", output)
 
+    def test_generation_time_alone_does_not_trigger_publication(self):
+        previous = {
+            "schemaVersion": 2,
+            "metadata": {
+                "generatedAt": "13/07/2026 13:03:01",
+                "referenceDate": "2026-07-13",
+            },
+            "features": {"personalDataIncluded": False},
+            "withdrawals": [{"Item": "1"}],
+            "stock": [],
+            "openTools": [],
+        }
+        current = {
+            **previous,
+            "metadata": {
+                **previous["metadata"],
+                "generatedAt": "13/07/2026 13:08:01",
+            },
+        }
+
+        self.assertTrue(
+            atualizar_dashboard._payloads_equivalent_for_publish(
+                previous, current
+            )
+        )
+
+    def test_reference_date_change_triggers_daily_publication(self):
+        previous = {
+            "metadata": {
+                "generatedAt": "13/07/2026 23:59:00",
+                "referenceDate": "2026-07-13",
+            }
+        }
+        current = {
+            "metadata": {
+                "generatedAt": "14/07/2026 00:01:00",
+                "referenceDate": "2026-07-14",
+            }
+        }
+
+        self.assertFalse(
+            atualizar_dashboard._payloads_equivalent_for_publish(
+                previous, current
+            )
+        )
+
 
     def test_homologation_blocks_git_push(self):
         with self.assertRaises(RuntimeError):

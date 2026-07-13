@@ -10,6 +10,8 @@
 - Incorporada a regra beta.6: 90 dias é ponto de reposição e a faixa segura começa acima de 120 dias.
 - Corrigida a passagem do caminho do repositório ao PowerShell quando `%~dp0` termina com barra invertida.
 - Adicionada restauração automática do `index.html` modular depois que a tarefa V8 é pausada.
+- Evitados commits repetidos quando somente o horário de geração muda; alterações reais continuam automáticas e a data de referência avança uma vez por dia.
+- Corrigida a soma de dias em datas locais para não recuar um dia no fuso horário do Brasil.
 
 ## 2.0.0-beta.6 — Ponto de reposição e semáforo de decisão
 
