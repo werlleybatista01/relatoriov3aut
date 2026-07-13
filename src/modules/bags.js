@@ -209,6 +209,15 @@ export function calculateBagMetrics({ rows, stock, referenceDate }) {
     ? Math.max(0, Math.floor(coverageDays - REORDER_POINT_DAYS))
     : null;
   const series = monthlySeries(rows);
+  const monthsWithConsumption = series.filter((item) => item.value > 0);
+  const monthlyAverage = monthsWithConsumption.length
+    ? monthsWithConsumption.reduce((totalValue, item) => totalValue + item.value, 0) /
+      monthsWithConsumption.length
+    : 0;
+  const peakMonth = monthsWithConsumption.reduce(
+    (peak, item) => (!peak || item.value > peak.value ? item : peak),
+    null
+  );
   const trendResult = trendPercent(series, bounds.end || referenceDate);
   const latestMonth = series.at(-1) || null;
 
@@ -243,6 +252,9 @@ export function calculateBagMetrics({ rows, stock, referenceDate }) {
     deficit90Days,
     buyInDays,
     series,
+    monthlyAverage,
+    monthsWithConsumption: monthsWithConsumption.length,
+    peakMonth,
     trend: trendResult.value,
     trendProjected: trendResult.projected,
     latestMonth,
@@ -251,19 +263,6 @@ export function calculateBagMetrics({ rows, stock, referenceDate }) {
     statusTitle,
     statusDetail
   };
-}
-
-function renderSelectOptions(values, selected, allLabel) {
-  const unique = Array.from(new Set(values.filter(Boolean))).sort((a, b) =>
-    String(a).localeCompare(String(b), "pt-BR")
-  );
-  return [
-    `<option value="todos">${escapeHtml(allLabel)}</option>`,
-    ...unique.map(
-      (value) =>
-        `<option value="${escapeHtml(value)}"${value === selected ? " selected" : ""}>${escapeHtml(value)}</option>`
-    )
-  ].join("");
 }
 
 function renderBarsList(groups, action = "", maxItems = 10) {
@@ -481,7 +480,6 @@ export function createBagsModule({
     selectors.metadata;
   const allRows = selectors.seasonalByCategory("Sacolas");
   const stockRows = selectors.stockByCategory("Sacolas");
-  const years = Array.from(new Set(allRows.map(recordYear).filter(Boolean))).sort();
   const availableSectors = allRows.map(rowSector).filter(Boolean);
   const hasSectorData = availableSectors.length > 0;
 
@@ -692,48 +690,8 @@ export function createBagsModule({
     </header>`;
   }
 
-  function renderYearButtons() {
-    return [...years.map(String), "geral"]
-      .map(
-        (year) =>
-          `<button type="button" class="bags-year-button${state.year === year ? " active" : ""}" data-bags-year="${year}">${year === "geral" ? "Geral" : year}</button>`
-      )
-      .join("");
-  }
-
-  function renderFilters(
-    rows,
-    {
-      showPerson = false,
-      showSector = false,
-      showDownload = false,
-      compact = false
-    } = {}
-  ) {
-    const sectorOptions = hasSectorData
-      ? renderSelectOptions(allRows.map(rowSector), state.sector, "Todos")
-      : '<option value="todos">Sem cadastro de setor</option>';
-
-    return `<div class="bags-filterbar${compact ? " compact" : ""}">
-      <label class="bags-date-filter"><span>Período</span><div><input id="bagsStart" type="date" value="${state.start}"><b>até</b><input id="bagsEnd" type="date" value="${state.end}"></div></label>
-      <div class="bags-year-switch" aria-label="Ano do relatório">${renderYearButtons()}</div>
-      ${showSector ? `<label><span>Setor</span><select id="bagsSector"${hasSectorData ? "" : " disabled"}>${sectorOptions}</select></label>` : ""}
-      ${
-        showPerson
-          ? `<label><span>Colaborador</span><select id="bagsPerson">${renderSelectOptions(
-              rows.map((row) => row.Requisitante || "Não informado"),
-              state.person,
-              "Todos"
-            )}</select></label>`
-          : ""
-      }
-      <label><span>Tipo de sacola</span><select id="bagsProduct">${renderSelectOptions(
-        rows.map((row) => row["Nome do Produto"] || "Não informado"),
-        state.product,
-        "Todos"
-      )}</select></label>
-      ${showDownload ? '<button class="btn green bags-download" type="button" data-action="download-report">📥 Planilha completa</button>' : ""}
-    </div>`;
+  function renderFilters(_rows, _options = {}) {
+    return "";
   }
 
   function renderExecutiveKpis(metrics) {
@@ -981,6 +939,35 @@ export function createBagsModule({
     return `<div class="bags-month-bars">${values.map((item) => `<div><span>${escapeHtml(monthLabel(item.key))}</span><i><b style="width:${clamp((item.value / maximum) * 100, 2, 100)}%"></b></i><strong>${formatNumber(item.value)}</strong></div>`).join("")}</div>`;
   }
 
+  function renderMonthlyConsumptionSummary(metrics) {
+    const months = metrics.series
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+    const maximum = Math.max(...months.map((item) => item.value), 1);
+
+    if (!months.length) {
+      return '<article class="bags-monthly-summary"><div class="bags-empty">Sem consumo mensal disponível.</div></article>';
+    }
+
+    return `<section class="bags-monthly-summary" aria-label="Resumo mensal de consumo">
+      <article class="bags-monthly-average-card">
+        <i>▥</i><span>Média mensal de consumo</span>
+        <b>${formatNumber(metrics.monthlyAverage)}</b>
+        <small>sacolas por mês · ${formatNumber(metrics.monthsWithConsumption)} meses analisados</small>
+        <em>Maior consumo: ${escapeHtml(monthLabel(metrics.peakMonth.key))} · ${formatNumber(metrics.peakMonth.value)} sacolas</em>
+      </article>
+      <article class="bags-monthly-ranking-card">
+        <div class="bags-panel-heading"><div><h3>Meses com maior consumo</h3><p>Quantidade de materiais e sacolas consumidas por mês.</p></div></div>
+        <div class="bags-month-ranking">${months
+          .map(
+            (item, index) =>
+              `<div class="${index === 0 ? "peak" : ""}"><span>${escapeHtml(monthLabel(item.key))}</span><i><b style="width:${clamp((item.value / maximum) * 100, 3, 100)}%"></b></i><strong>${formatNumber(item.value)}</strong></div>`
+          )
+          .join("")}</div>
+      </article>
+    </section>`;
+  }
+
   function renderSimulator(metrics, currentStock) {
     const added = Math.max(0, state.simulatedPackages) * bagsPerPackage;
     const simulatedStock = currentStock + added;
@@ -996,7 +983,7 @@ export function createBagsModule({
     return `<div class="bags-overview-period"><span>Dados operacionais de ${operatingYear}</span><b>Atualizado até ${formatBrazilianDate(updatedAt)}</b></div>
       ${renderExecutiveKpis(metrics)}
       <div class="bags-overview-grid">
-        <article class="bags-chart-panel"><div class="bags-panel-heading"><div><h3>Consumo e projeção</h3><p>Leitura principal para acompanhar ritmo e mudança de demanda.</p></div><span>${formatNumber(metrics.total)} sacolas · ${formatNumber(sourceCount)} retiradas</span></div>${renderConsumptionChart(metrics.series)}</article>
+        <div class="bags-overview-main"><article class="bags-chart-panel"><div class="bags-panel-heading"><div><h3>Consumo e projeção</h3><p>Leitura principal para acompanhar ritmo e mudança de demanda.</p></div><span>${formatNumber(metrics.total)} sacolas · ${formatNumber(sourceCount)} retiradas</span></div>${renderConsumptionChart(metrics.series)}</article>${renderMonthlyConsumptionSummary(metrics)}</div>
         <aside class="bags-overview-sidebar">${renderOverviewStockCard(metrics, currentStock)}${renderOverviewInsights(insights)}${renderOverviewDecision(metrics)}</aside>
       </div>`;
   }

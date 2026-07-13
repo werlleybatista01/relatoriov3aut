@@ -87,3 +87,23 @@ test("semáforo de sacolas usa verde acima de 120, amarelo até 120 e vermelho a
   assert.equal(danger.coverageDays, 66);
   assert.equal(danger.status, "danger");
 });
+
+test("média mensal considera meses com consumo e identifica o maior mês", () => {
+  const metrics = calculateBagMetrics({
+    rows: [
+      { Data_iso: "2026-01-05", Qtde_num: 100 },
+      { Data_iso: "2026-01-20", Qtde_num: 200 },
+      { Data_iso: "2026-03-10", Qtde_num: 500 }
+    ],
+    stock: 1000,
+    referenceDate: "2026-03-10"
+  });
+
+  assert.equal(metrics.monthsWithConsumption, 2);
+  assert.equal(metrics.monthlyAverage, 400);
+  assert.deepEqual(metrics.peakMonth, {
+    key: "2026-03",
+    value: 500,
+    projected: false
+  });
+});

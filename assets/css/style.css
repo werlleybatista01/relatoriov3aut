@@ -1812,7 +1812,7 @@ select:focus-visible {
   gap: 12px;
   align-items: stretch;
 }
-.bags-overview-grid > .bags-chart-panel {
+.bags-overview-main > .bags-chart-panel {
   min-height: 390px;
 }
 .bags-decision-card {
@@ -2297,7 +2297,7 @@ select:focus-visible {
   .bags-line-chart svg {
     min-width: 680px;
   }
-  .bags-overview-grid > .bags-chart-panel {
+  .bags-overview-main > .bags-chart-panel {
     min-height: 0;
   }
 }
@@ -2341,8 +2341,108 @@ select:focus-visible {
   grid-template-columns: minmax(0, 2.05fr) minmax(330px, 0.9fr);
   align-items: start;
 }
-.bags-overview-grid > .bags-chart-panel {
+.bags-overview-main {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.bags-overview-main > .bags-chart-panel {
   min-height: 430px;
+}
+.bags-monthly-summary {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.8fr);
+  gap: 12px;
+}
+.bags-monthly-average-card,
+.bags-monthly-ranking-card {
+  border: 1px solid #dce6ef;
+  border-radius: 18px;
+  background: #fff;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(23, 57, 92, 0.07);
+}
+.bags-monthly-average-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 220px;
+  background: linear-gradient(145deg, #f7fbff, #eef7ff);
+}
+.bags-monthly-average-card > i {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 12px;
+  border-radius: 13px;
+  background: #dcecff;
+  color: #1269ca;
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 950;
+}
+.bags-monthly-average-card > span {
+  color: #52677e;
+  font-size: 12px;
+  font-weight: 850;
+}
+.bags-monthly-average-card > b {
+  margin: 4px 0 1px;
+  color: #0f5fad;
+  font-size: 34px;
+  line-height: 1;
+}
+.bags-monthly-average-card > small {
+  color: #60748a;
+  font-size: 10.5px;
+}
+.bags-monthly-average-card > em {
+  margin-top: 14px;
+  padding-top: 11px;
+  border-top: 1px solid #d7e5f2;
+  color: #244d78;
+  font-size: 10.5px;
+  font-style: normal;
+  font-weight: 850;
+}
+.bags-month-ranking {
+  display: grid;
+  gap: 9px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.bags-month-ranking > div {
+  display: grid;
+  grid-template-columns: 78px minmax(80px, 1fr) 58px;
+  align-items: center;
+  gap: 9px;
+  color: #52677e;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.bags-month-ranking i {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #e8eef5;
+}
+.bags-month-ranking i b {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #51a5f6, #1473e6);
+}
+.bags-month-ranking .peak {
+  color: #0f5fad;
+}
+.bags-month-ranking .peak i b {
+  background: linear-gradient(90deg, #ffb23f, #f07800);
+}
+.bags-month-ranking strong {
+  text-align: right;
+  color: #183653;
 }
 .bags-overview-sidebar {
   display: grid;
@@ -2587,7 +2687,7 @@ select:focus-visible {
   .bags-overview-decision {
     grid-column: 1/-1;
   }
-  .bags-overview-grid > .bags-chart-panel {
+  .bags-overview-main > .bags-chart-panel {
     min-height: 0;
   }
 }
@@ -2607,6 +2707,9 @@ select:focus-visible {
   }
   .bags-overview-stock-value b {
     font-size: 30px;
+  }
+  .bags-monthly-summary {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 430px) {
