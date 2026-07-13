@@ -7,7 +7,7 @@ git pull --rebase --autostash
 if errorlevel 1 goto :erro
 
 echo [2/4] Preparando a melhoria visual...
-git add -- assets/css/style.css src/modules/bags.js tests/core.test.js APLICAR_MELHORIA_FINAL.bat
+git add -- assets/css/style.css src/modules/bags.js tests/architecture.test.js tests/core.test.js APLICAR_MELHORIA_FINAL.bat
 if errorlevel 1 goto :erro
 
 git diff --cached --quiet

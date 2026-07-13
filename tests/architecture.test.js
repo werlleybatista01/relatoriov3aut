@@ -32,6 +32,21 @@ test("template de recuperação é a mesma casca modular de produção", async (
   assert.equal(template, index);
 });
 
+test("grades de sacolas preservam cartões legíveis e responsivos", async () => {
+  const css = await readFile(
+    new URL("../assets/css/style.css", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(
+    css,
+    /\.season-grid\s*\{[^}]*repeat\(auto-fit,\s*minmax\(min\(100%,\s*230px\),\s*1fr\)\)/s
+  );
+  assert.match(css, /\.season-card\s*\{[^}]*display:\s*flex/s);
+  assert.match(css, /\.season-card\s*\{[^}]*flex-direction:\s*column/s);
+  assert.match(css, /\.bags-overview-grid\s*>\s*\*[^}]*min-width:\s*0/s);
+});
+
 test("payload público contém somente identificadores pseudonimizados", async () => {
   const { dashboardData } = await import("../data/dashboard-data.js");
 
