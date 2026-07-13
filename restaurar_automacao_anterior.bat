@@ -8,7 +8,7 @@ if errorlevel 1 (
   exit /b
 )
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Rollback -RepoDir "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Rollback -RepoDir "%~dp0."
 if errorlevel 1 (
   echo Nao foi possivel concluir o rollback.
 ) else (

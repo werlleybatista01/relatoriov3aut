@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Relatório Analítico do Almoxarifado</title>
+
+    <link href="assets/css/style.css" rel="stylesheet" />
+  </head>
+  <body>
+    <noscript>Este dashboard precisa de JavaScript habilitado.</noscript>
+    <header class="hero">
+      <div class="header">
+        <div class="brand">
+          <img alt="Prefeitura Municipal" class="logo" src="assets/images/logo.jpg" />
+          <div>
+            <h1>Relatório Analítico do Almoxarifado</h1>
+            <p class="sub">
+              Prefeitura Municipal de Pedro Canário • Saídas por categoria
+            </p>
+          </div>
+        </div>
+        <div class="datebox">
+          <b>Período do relatório</b><br /><span id="periodoHeader"
+            >Carregando período...</span
+          ><br /><small
+            >Atualizado em <span id="geradoHeader">Carregando...</span></small
+          >
+        </div>
+      </div>
+    </header>
+    <main class="wrap">
+      <section class="section active" id="home">
+        <div class="topbar">
+          <div>
+            <h2>Relatórios por categoria</h2>
+            <p>
+              Indicadores operacionais de 2026. O histórico de 2025 é usado somente na
+              análise sazonal.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn green" data-action="download-report">
+              📥 Baixar planilha completa
+            </button>
+          </div>
+        </div>
+        <div class="grid" id="homeCards"></div>
+      </section>
+      <section class="section" id="generic">
+        <div class="topbar">
+          <div>
+            <h2 id="genericTitle"></h2>
+            <p id="genericSub"></p>
+          </div>
+          <div class="actions">
+            <button class="btn green" data-action="download-report">
+              📥 Baixar planilha</button
+            ><button class="btn back" data-action="navigate-home">← Voltar</button>
+          </div>
+        </div>
+        <div id="genericContent"></div>
+      </section>
+      <section class="section" id="botinas">
+        <div class="topbar">
+          <div>
+            <h2>🥾 Dashboard Analítico de Botinas</h2>
+            <p>Estoque atual, consumo por tamanho, cobertura e colaboradores.</p>
+          </div>
+          <div class="actions">
+            <button class="btn green" data-action="download-report">
+              📥 Baixar planilha</button
+            ><button class="btn back" data-action="navigate-home">← Voltar</button>
+          </div>
+        </div>
+        <div id="botinasContent"></div>
+      </section>
+      <section class="section" id="sacolas">
+        <div class="topbar">
+          <div>
+            <h2>🛍️ Dashboard de Consumo de Sacolas</h2>
+            <p>
+              Estoque mínimo de 3 meses, sazonalidade municipal, consumo e projeção de
+              compra.
+            </p>
+          </div>
+          <div class="actions">
+            <button class="btn green" data-action="download-report">
+              📥 Baixar planilha</button
+            ><button class="btn back" data-action="navigate-home">← Voltar</button>
+          </div>
+        </div>
+        <div id="sacolasContent"></div>
+      </section>
+    </main>
+    <div class="modal" id="modal">
+      <div class="modalbox">
+        <div class="modalhead">
+          <div>
+            <h2 id="modalTitle"></h2>
+            <p class="muted" id="modalSub"></p>
+          </div>
+          <button class="x" data-action="modal-close">Fechar</button>
+        </div>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+    <script src="src/main.js" type="module"></script>
+  </body>
+</html>

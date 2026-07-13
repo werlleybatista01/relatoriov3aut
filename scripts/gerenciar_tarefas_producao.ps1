@@ -6,7 +6,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $TaskName = "Atualizar Dashboard Almoxarifado V2"
-$RepoDir = (Resolve-Path $RepoDir).Path.TrimEnd("\")
+$RepoDir = $RepoDir.Trim().Trim('"').TrimEnd([char[]]"\/")
+$RepoDir = (Resolve-Path -LiteralPath $RepoDir).Path.TrimEnd([char[]]"\/")
 $StateFile = Join-Path $RepoDir ".migracao-dashboard-v2.json"
 $OldAutomation = Join-Path $env:USERPROFILE "Desktop\automacao"
 

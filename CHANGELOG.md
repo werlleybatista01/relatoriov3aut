@@ -8,6 +8,8 @@
 - Corrigido o Git para versionar os artefatos públicos gerados pela automação.
 - Publicação configurada sem nomes, telefones, observações ou outros dados pessoais.
 - Incorporada a regra beta.6: 90 dias é ponto de reposição e a faixa segura começa acima de 120 dias.
+- Corrigida a passagem do caminho do repositório ao PowerShell quando `%~dp0` termina com barra invertida.
+- Adicionada restauração automática do `index.html` modular depois que a tarefa V8 é pausada.
 
 ## 2.0.0-beta.6 — Ponto de reposição e semáforo de decisão
 

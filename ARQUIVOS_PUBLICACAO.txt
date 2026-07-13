@@ -4,6 +4,7 @@
 .prettierignore
 ARQUIVOS_PUBLICACAO.txt
 CHANGELOG.md
+CORRIGIR_E_CONTINUAR.bat
 INICIAR_INSTALACAO.bat
 LEIA-ME-INSTALACAO.txt
 MANIFESTO.txt
@@ -45,6 +46,7 @@ scripts/__init__.py
 scripts/atualizar_dashboard.py
 scripts/diagnosticar_ambiente.py
 scripts/gerenciar_tarefas_producao.ps1
+scripts/garantir_frontend_modular.bat
 scripts/legacy/__init__.py
 scripts/legacy/atualizar_index_github_v9.py
 scripts/preparar_producao.py
@@ -70,3 +72,4 @@ tests/smoke.test.js
 tests/test_diagnostic.py
 tests/test_prepare_production.py
 tests/test_updater.py
+templates/index.modular.html

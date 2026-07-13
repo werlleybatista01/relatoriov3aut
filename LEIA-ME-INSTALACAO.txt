@@ -10,6 +10,12 @@ SE O GITHUB AINDA MOSTRAR O PAINEL ANTIGO
 Esse arquivo publica somente a lista revisada em ARQUIVOS_PUBLICACAO.txt. O
 config.env, o Access, os logs e a classificacao privada continuam fora do Git.
 
+SE UMA TENTATIVA ANTERIOR PAROU EM "FAZENDO BACKUP"
+
+Extraia novamente o pacote atualizado sobre a mesma pasta e execute
+CORRIGIR_E_CONTINUAR.bat. O reparo corrige o caminho enviado ao PowerShell,
+pausa a V8 e restaura o index modular antes de validar a nova automacao.
+
 SE O PAINEL V2 JA ESTIVER NO GITHUB
 
 1. Execute INICIAR_INSTALACAO.bat.

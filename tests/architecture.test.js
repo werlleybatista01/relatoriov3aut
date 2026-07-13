@@ -23,6 +23,15 @@ test("main apenas inicializa a aplicação", async () => {
   assert.equal(main.includes("TBRetiradas"), false);
 });
 
+test("template de recuperação é a mesma casca modular de produção", async () => {
+  const [index, template] = await Promise.all([
+    readFile(new URL("../index.html", import.meta.url), "utf8"),
+    readFile(new URL("../templates/index.modular.html", import.meta.url), "utf8")
+  ]);
+
+  assert.equal(template, index);
+});
+
 test("payload público contém somente identificadores pseudonimizados", async () => {
   const { dashboardData } = await import("../data/dashboard-data.js");
 

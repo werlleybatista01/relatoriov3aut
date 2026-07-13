@@ -36,28 +36,32 @@ if not errorlevel 1 (
   set "PY=python"
 )
 
-echo [1/6] Atualizando o codigo do GitHub...
+echo [1/7] Atualizando o codigo do GitHub...
 git pull --rebase --autostash
 if errorlevel 1 goto :falha
 
-echo [2/6] Instalando dependencias Python...
-%PY% -m pip install -r requirements.txt
-if errorlevel 1 goto :falha
-
-echo [3/6] Preservando e preparando a configuracao local...
+echo [2/7] Preservando e preparando a configuracao local...
 %PY% -m scripts.preparar_producao
 if errorlevel 1 goto :falha
 
-echo [4/6] Fazendo backup e pausando a automacao anterior...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Prepare -RepoDir "%~dp0"
+echo [3/7] Fazendo backup e pausando a automacao anterior...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Prepare -RepoDir "%~dp0."
 if errorlevel 1 goto :rollback
 
-echo [5/6] Validando uma atualizacao completa e o envio automatico...
+echo [4/7] Garantindo o frontend modular no GitHub...
+call "%~dp0scripts\garantir_frontend_modular.bat"
+if errorlevel 1 goto :rollback
+
+echo [5/7] Instalando dependencias Python...
+%PY% -m pip install -r requirements.txt
+if errorlevel 1 goto :rollback
+
+echo [6/7] Validando uma atualizacao completa e o envio automatico...
 call "%~dp0atualizar_silencioso.bat"
 if errorlevel 1 goto :rollback
 
-echo [6/6] Ativando a nova tarefa a cada 5 minutos...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Activate -RepoDir "%~dp0"
+echo [7/7] Ativando a nova tarefa a cada 5 minutos...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Activate -RepoDir "%~dp0."
 if errorlevel 1 goto :rollback
 
 echo.
@@ -70,7 +74,7 @@ exit /b 0
 
 :rollback
 echo A validacao falhou. Reativando a automacao anterior...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Rollback -RepoDir "%~dp0"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\gerenciar_tarefas_producao.ps1" -Mode Rollback -RepoDir "%~dp0."
 
 :falha
 echo.
