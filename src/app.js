@@ -1,4 +1,3 @@
-import { dashboardData } from "../data/dashboard-data.js";
 import { escapeHtml } from "./core/formatters.js";
 import { createDataSelectors } from "./core/data-selectors.js";
 import { createComponents } from "./core/components.js";
@@ -18,7 +17,7 @@ import { createHomeModule } from "./modules/home.js";
  * Este arquivo conhece as dependências entre os módulos, mas não implementa
  * regras de estoque, classificação ou apresentação específica.
  */
-export function createDashboardApp(payload = dashboardData, documentRef = document) {
+export function createDashboardApp(payload, documentRef = document) {
   if (!payload || payload.schemaVersion !== 2) {
     throw new Error("Formato de dados incompatível. Esperado schemaVersion 2.");
   }

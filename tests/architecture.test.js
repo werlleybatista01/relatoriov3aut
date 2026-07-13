@@ -11,14 +11,15 @@ test("index é uma casca sem CSS ou JavaScript embutido", async () => {
   assert.match(html, /assets\/css\/style\.css/);
   assert.match(
     html,
-    /<script[^>]*src="src\/main\.js"[^>]*type="module"[^>]*>|<script[^>]*type="module"[^>]*src="src\/main\.js"[^>]*>/
+    /<script[^>]*src="src\/main\.js\?v=[^"]+"[^>]*type="module"[^>]*>|<script[^>]*type="module"[^>]*src="src\/main\.js\?v=[^"]+"[^>]*>/
   );
 });
 
 test("main apenas inicializa a aplicação", async () => {
   const main = await readFile(new URL("../src/main.js", import.meta.url), "utf8");
 
-  assert.match(main, /createDashboardApp\(\)\.init\(\)/);
+  assert.match(main, /dataUrl\.searchParams\.set\("v", String\(Date\.now\(\)\)\)/);
+  assert.match(main, /createDashboardApp\(dashboardData\)\.init\(\)/);
   assert.equal(main.includes("renderBotinas"), false);
   assert.equal(main.includes("TBRetiradas"), false);
 });
