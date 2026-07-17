@@ -13,7 +13,11 @@
 
 O GitHub Pages é público. Qualquer dado presente em `dashboard-data.js` pode ser lido por quem acessar o repositório ou o site.
 
-Para uma implantação profissional com nomes e retiradas individuais, use:
+Esta instalação foi ajustada para permitir nomes reais de colaboradores no
+dashboard publicado. Para reduzir risco, os telefones continuam bloqueados
+quando `DIRECT_WHATSAPP_ENABLED=false`.
+
+Para uma implantação profissional com nomes e retiradas individuais, prefira:
 
 - repositório privado com hospedagem autenticada; ou
 - backend protegido; ou
