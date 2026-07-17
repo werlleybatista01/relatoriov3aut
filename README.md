@@ -46,19 +46,20 @@ Para desfazer a troca, execute `restaurar_automacao_anterior.bat`.
 
 ## Segurança da publicação
 
-A produção é preparada obrigatoriamente com:
+A produção atual foi configurada para publicar nomes reais de colaboradores:
 
 ```env
 HOMOLOGATION_MODE=false
 GIT_PUSH=true
-INCLUDE_PERSONAL_DATA=false
-ALLOW_PUBLIC_PERSONAL_DATA=false
+INCLUDE_PERSONAL_DATA=true
+ALLOW_PUBLIC_PERSONAL_DATA=true
 DIRECT_WHATSAPP_ENABLED=false
 ```
 
-Nomes e números de retirada recebem identificadores estáveis; observações,
-responsável pelo registro e telefones não são publicados. `config.env`, banco
-Access, classificação privada, logs, estado e lock permanecem fora do Git.
+Com essa configuração, nomes reais podem aparecer no GitHub Pages e no arquivo
+`data/dashboard-data.js`. Telefones continuam ocultos porque
+`DIRECT_WHATSAPP_ENABLED=false`. `config.env`, banco Access, classificação
+privada, logs, estado e lock permanecem fora do Git.
 
 ## Testes
 
