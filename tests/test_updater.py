@@ -129,6 +129,15 @@ class PayloadTests(unittest.TestCase):
                 direct_whatsapp_enabled=False,
             )
 
+    def test_publication_allows_personal_data_with_explicit_override(self):
+        atualizar_dashboard.validate_security_profile(
+            git_push=True,
+            homologation_mode=False,
+            include_personal_data=True,
+            allow_public_personal_data=True,
+            direct_whatsapp_enabled=False,
+        )
+
     def test_direct_whatsapp_requires_personal_data(self):
         with self.assertRaises(RuntimeError):
             atualizar_dashboard.validate_security_profile(
