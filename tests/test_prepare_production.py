@@ -6,7 +6,7 @@ from scripts.preparar_producao import prepare_production, read_env
 
 
 class PrepareProductionTests(unittest.TestCase):
-    def test_preserves_password_and_applies_safe_public_profile(self):
+    def test_preserves_password_and_applies_authorized_named_profile(self):
         with tempfile.TemporaryDirectory() as temp:
             base = Path(temp)
             root = base / "repo"
@@ -29,7 +29,8 @@ class PrepareProductionTests(unittest.TestCase):
             self.assertEqual(values["ACCESS_PASSWORD"], "SEGREDO_LOCAL")
             self.assertEqual(values["HOMOLOGATION_MODE"], "false")
             self.assertEqual(values["GIT_PUSH"], "true")
-            self.assertEqual(values["INCLUDE_PERSONAL_DATA"], "false")
+            self.assertEqual(values["INCLUDE_PERSONAL_DATA"], "true")
+            self.assertEqual(values["ALLOW_PUBLIC_PERSONAL_DATA"], "true")
             self.assertEqual(values["DIRECT_WHATSAPP_ENABLED"], "false")
             self.assertTrue(
                 (root / "classificacao_ferramentas.json").exists()
