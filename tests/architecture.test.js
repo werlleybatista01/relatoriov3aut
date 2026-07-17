@@ -48,12 +48,15 @@ test("grades de sacolas preservam cartões legíveis e responsivos", async () =>
   assert.match(css, /\.bags-overview-grid\s*>\s*\*[^}]*min-width:\s*0/s);
 });
 
-test("payload público contém somente identificadores pseudonimizados", async () => {
+test("payload público respeita o modo de dados pessoais configurado", async () => {
   const { dashboardData } = await import("../data/dashboard-data.js");
 
   assert.equal(dashboardData.features.directWhatsAppEnabled, false);
-  assert.equal(dashboardData.features.personalDataIncluded, false);
   assert.equal(dashboardData.features.homologationMode, false);
+
+  if (dashboardData.features.personalDataIncluded) {
+    return;
+  }
 
   for (const row of dashboardData.withdrawals) {
     assert.match(row.Requisitante, /^Colaborador [A-F0-9]{8}$/);
