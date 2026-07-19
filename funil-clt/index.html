@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Consulta rapida de perfil para trabalhadores CLT verificarem opcoes de credito disponiveis."
+    />
+    <title>Consulta CLT | Pre-qualificacao</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app" aria-live="polite">
+      <section class="screen screen-active" data-screen="intro">
+        <div class="shell">
+          <div class="trust-row" aria-label="Pontos de confianca">
+            <span>Processo rapido</span>
+            <span>Sem CPF agora</span>
+          </div>
+
+          <div class="hero-copy">
+            <p class="eyebrow">Consulta para trabalhador CLT</p>
+            <h1>Verifique opcoes de credito para o seu perfil em menos de 1 minuto.</h1>
+            <p>
+              Responda algumas perguntas simples e continue pelo WhatsApp para
+              consultar as condicoes disponiveis. Sem promessa de aprovacao.
+            </p>
+          </div>
+
+          <button class="primary-action" type="button" data-start>
+            Verificar meu perfil
+          </button>
+
+          <div class="security-note">
+            <strong>Tratamento responsavel dos dados</strong>
+            <span>Neste MVP nao pedimos CPF, senha ou dados bancarios.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="quiz" hidden>
+        <div class="shell quiz-shell">
+          <header class="quiz-header">
+            <span class="step-label" data-step-label>Pergunta 1 de 4</span>
+            <div class="progress-track" aria-label="Progresso">
+              <div class="progress-fill" data-progress></div>
+            </div>
+          </header>
+
+          <div class="question-card">
+            <p class="eyebrow" data-question-kicker>Perfil CLT</p>
+            <h2 data-question-title></h2>
+            <p data-question-helper></p>
+            <div class="answer-grid" data-answer-grid></div>
+          </div>
+
+          <button class="back-button" type="button" data-back>
+            Voltar
+          </button>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="analysis" hidden>
+        <div class="shell analysis-shell">
+          <div class="scan-card" aria-hidden="true">
+            <div class="scan-line"></div>
+            <div class="scan-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+          <p class="eyebrow">Quase pronto</p>
+          <h2>Analisando suas informacoes</h2>
+          <p>
+            Estamos organizando suas respostas para continuar a consulta pelo
+            canal correto.
+          </p>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="result" hidden>
+        <div class="shell result-shell">
+          <div class="result-badge">Consulta iniciada</div>
+          <h2>Pronto! Vamos continuar sua consulta.</h2>
+          <p>
+            Para verificar as condicoes disponiveis para o seu perfil, continue
+            pelo WhatsApp com suas respostas ja organizadas.
+          </p>
+
+          <div class="summary-card">
+            <h3>Resumo enviado ao atendimento</h3>
+            <ul data-summary></ul>
+          </div>
+
+          <button class="whatsapp-button" type="button" data-whatsapp>
+            Continuar pelo WhatsApp
+          </button>
+
+          <p class="fine-print">
+            A consulta nao garante aprovacao. As condicoes dependem da analise
+            do perfil e das regras das instituicoes parceiras.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
