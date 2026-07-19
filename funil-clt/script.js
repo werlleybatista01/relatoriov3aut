@@ -29,7 +29,7 @@ const questions = [
     kicker: "Tempo no emprego",
     title: "Há quanto tempo você está no emprego atual?",
     helper: "Para o crédito CLT, normalmente é necessário ter pelo menos 6 meses no emprego atual.",
-    options: ["Menos de 3 meses", "3 a 6 meses", "6 a 12 meses", "Mais de 12 meses"],
+    options: ["Menos de 3 meses", "3 a menos de 6 meses", "6 a 12 meses", "Mais de 12 meses"],
   },
   {
     id: "emprestimo",
