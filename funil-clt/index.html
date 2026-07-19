@@ -5,26 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Consulta rapida de perfil para trabalhadores CLT verificarem opcoes de credito disponiveis."
+      content="Consulta rápida de perfil para trabalhadores CLT verificarem opções de crédito disponíveis."
     />
-    <title>Consulta CLT | Pre-qualificacao</title>
+    <title>Consulta CLT | Pré-qualificação</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app" aria-live="polite">
       <section class="screen screen-active" data-screen="intro">
         <div class="shell">
-          <div class="trust-row" aria-label="Pontos de confianca">
-            <span>Processo rapido</span>
+          <div class="trust-row" aria-label="Pontos de confiança">
+            <span>Processo rápido</span>
             <span>Sem CPF agora</span>
           </div>
 
           <div class="hero-copy">
-            <p class="eyebrow">Consulta para trabalhador CLT</p>
-            <h1>Verifique opcoes de credito para o seu perfil em menos de 1 minuto.</h1>
+                <p class="eyebrow">Consulta para trabalhador CLT</p>
+            <h1>Verifique opções de crédito para o seu perfil em menos de 1 minuto.</h1>
             <p>
               Responda algumas perguntas simples e continue pelo WhatsApp para
-              consultar as condicoes disponiveis. Sem promessa de aprovacao.
+              consultar as condições disponíveis. Sem promessa de aprovação.
             </p>
           </div>
 
@@ -33,8 +33,8 @@
           </button>
 
           <div class="security-note">
-            <strong>Tratamento responsavel dos dados</strong>
-            <span>Neste MVP nao pedimos CPF, senha ou dados bancarios.</span>
+            <strong>Tratamento responsável dos dados</strong>
+            <span>Neste MVP não pedimos CPF, senha ou dados bancários.</span>
           </div>
         </div>
       </section>
@@ -42,7 +42,7 @@
       <section class="screen" data-screen="quiz" hidden>
         <div class="shell quiz-shell">
           <header class="quiz-header">
-            <span class="step-label" data-step-label>Pergunta 1 de 4</span>
+            <span class="step-label" data-step-label>Pergunta 1 de 5</span>
             <div class="progress-track" aria-label="Progresso">
               <div class="progress-fill" data-progress></div>
             </div>
@@ -72,7 +72,7 @@
             </div>
           </div>
           <p class="eyebrow">Quase pronto</p>
-          <h2>Analisando suas informacoes</h2>
+          <h2>Analisando suas informações</h2>
           <p>
             Estamos organizando suas respostas para continuar a consulta pelo
             canal correto.
@@ -82,11 +82,11 @@
 
       <section class="screen" data-screen="result" hidden>
         <div class="shell result-shell">
-          <div class="result-badge">Consulta iniciada</div>
-          <h2>Pronto! Vamos continuar sua consulta.</h2>
-          <p>
-            Para verificar as condicoes disponiveis para o seu perfil, continue
-            pelo WhatsApp com suas respostas ja organizadas.
+          <div class="result-badge" data-result-badge>Consulta iniciada</div>
+          <h2 data-result-title>Pronto! Vamos continuar sua consulta.</h2>
+          <p data-result-copy>
+            Para verificar as condições disponíveis para o seu perfil, continue
+            pelo WhatsApp com suas respostas já organizadas.
           </p>
 
           <div class="summary-card">
@@ -99,8 +99,8 @@
           </button>
 
           <p class="fine-print">
-            A consulta nao garante aprovacao. As condicoes dependem da analise
-            do perfil e das regras das instituicoes parceiras.
+            A consulta não garante aprovação. As condições dependem da análise
+            do perfil e das regras das instituições parceiras.
           </p>
         </div>
       </section>
