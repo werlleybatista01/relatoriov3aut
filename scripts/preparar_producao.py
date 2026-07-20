@@ -36,6 +36,13 @@ PRODUCTION_VALUES = {
     "ALLOW_BACKUP_REGRESSION": "false",
 }
 
+REQUIRED_NAMED_PUBLIC_VALUES = {
+    "HOMOLOGATION_MODE": "false",
+    "GIT_PUSH": "true",
+    "INCLUDE_PERSONAL_DATA": "true",
+    "ALLOW_PUBLIC_PERSONAL_DATA": "true",
+}
+
 ORDER = [
     "BACKUP_DIR",
     "BACKUP_PATTERNS",
@@ -96,6 +103,23 @@ def first_existing(paths: Iterable[Path]) -> Path | None:
     return next((path for path in paths if path.exists()), None)
 
 
+def validate_named_public_profile(values: Dict[str, str]) -> None:
+    wrong = {
+        key: values.get(key, "")
+        for key, expected in REQUIRED_NAMED_PUBLIC_VALUES.items()
+        if values.get(key, "").lower() != expected
+    }
+    if wrong:
+        details = ", ".join(
+            f"{key}={value or 'ausente'}" for key, value in sorted(wrong.items())
+        )
+        raise RuntimeError(
+            "Perfil de produção nominal inválido. O dashboard público deve "
+            "publicar nomes reais de colaboradores conforme autorizado. "
+            f"Valores divergentes: {details}"
+        )
+
+
 def prepare_production(
     root: Path = ROOT,
     old_automation: Path = DEFAULT_OLD_AUTOMATION,
@@ -131,6 +155,7 @@ def prepare_production(
     )
     values["REPO_DIR"] = str(root)
     values.update(PRODUCTION_VALUES)
+    validate_named_public_profile(values)
 
     root.mkdir(parents=True, exist_ok=True)
     (root / "data").mkdir(exist_ok=True)
@@ -169,6 +194,7 @@ def main() -> int:
         print(f"Repositório: {values['REPO_DIR']}")
         print(f"Backups: {values['BACKUP_DIR']}")
         print("Credencial preservada localmente: sim")
+        print("Publicação com nomes reais: sim")
         return 0
     except Exception as exc:
         print(f"ERRO: {exc}")
