@@ -295,6 +295,59 @@ button,
   grid-template-columns: 1fr 1fr auto;
   gap: 10px;
 }
+.tools-search-wrap {
+  position: relative;
+}
+.tools-dropdown {
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--borda);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 30px rgba(0, 44, 84, 0.12);
+}
+.tools-dropdown-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f2f8ff;
+  color: var(--azul);
+  font-weight: 900;
+}
+.tools-dropdown-list {
+  max-height: 360px;
+  overflow: auto;
+}
+.tools-location-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) 90px minmax(180px, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-top: 1px solid #edf2f7;
+}
+.tools-location-row:hover {
+  background: #f8fbff;
+}
+.tools-location-row b {
+  color: var(--azul);
+}
+.tools-location-row small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+}
+.tools-location-row strong {
+  color: var(--texto);
+  text-align: center;
+  white-space: nowrap;
+}
+.tools-dropdown-empty {
+  padding: 14px;
+  color: var(--muted);
+  text-align: center;
+}
 input,
 select {
   width: 100%;
@@ -784,6 +837,15 @@ th {
   }
   .searchbar {
     grid-template-columns: 1fr;
+  }
+  .tools-location-row {
+    grid-template-columns: 1fr auto;
+  }
+  .tools-location-row > div:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+  .tools-location-row .recommend-badge {
+    justify-self: start;
   }
   .hero {
     position: static;
