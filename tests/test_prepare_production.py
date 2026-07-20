@@ -2,7 +2,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.preparar_producao import prepare_production, read_env
+from scripts.preparar_producao import (
+    prepare_production,
+    read_env,
+    validate_named_public_profile,
+)
 
 
 class PrepareProductionTests(unittest.TestCase):
@@ -45,6 +49,27 @@ class PrepareProductionTests(unittest.TestCase):
             old.mkdir()
             with self.assertRaises(RuntimeError):
                 prepare_production(root, old)
+
+    def test_named_public_profile_rejects_anonymous_publication(self):
+        values = {
+            "HOMOLOGATION_MODE": "false",
+            "GIT_PUSH": "true",
+            "INCLUDE_PERSONAL_DATA": "false",
+            "ALLOW_PUBLIC_PERSONAL_DATA": "true",
+        }
+
+        with self.assertRaises(RuntimeError):
+            validate_named_public_profile(values)
+
+    def test_named_public_profile_accepts_authorized_names(self):
+        validate_named_public_profile(
+            {
+                "HOMOLOGATION_MODE": "false",
+                "GIT_PUSH": "true",
+                "INCLUDE_PERSONAL_DATA": "true",
+                "ALLOW_PUBLIC_PERSONAL_DATA": "true",
+            }
+        )
 
 
 if __name__ == "__main__":
