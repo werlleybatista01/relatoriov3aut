@@ -120,6 +120,8 @@ test("módulos principais renderizam com massa sintética", () => {
   home.render();
   generic.render("Uniformes");
   tools.render();
+  documentRef.getElementById("ferramentasBuscaNome").value = "escada";
+  tools.search();
   boots.render();
   bags.render();
 
@@ -133,4 +135,7 @@ test("módulos principais renderizam com massa sintética", () => {
   assert.match(bagsHtml, /Estoque atual/);
   assert.match(bagsHtml, /Insights importantes/);
   assert.doesNotMatch(bagsHtml, /bags-filterbar/);
+  const toolLocationHtml = documentRef.getElementById("ferramentasLocalizacao").innerHTML;
+  assert.match(toolLocationHtml, /COLABORADOR TESTE/);
+  assert.match(toolLocationHtml, /Almoxarifado/);
 });
