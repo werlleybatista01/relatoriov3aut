@@ -109,6 +109,34 @@ class PayloadTests(unittest.TestCase):
         )
 
 
+    def test_tool_stock_keeps_only_returnable_tools(self):
+        rows = [
+            {
+                "IDCodigo": "100",
+                "NomeProduto": "ESCADA EXTENSIVA",
+                "Categoria": "ESCADA",
+                "QtdeEstoque": 2,
+                "EstoqueMin": 1,
+            },
+            {
+                "IDCodigo": "200",
+                "NomeProduto": "BROCA 8MM",
+                "Categoria": "CONSUMO",
+                "QtdeEstoque": 10,
+                "EstoqueMin": 0,
+            },
+        ]
+        stock = atualizar_dashboard.normalize_tool_stock(
+            rows,
+            {"100": "devolvivel", "200": "consumo"},
+        )
+
+        self.assertEqual(len(stock), 1)
+        self.assertEqual(stock[0]["Categoria"], "Ferramentas")
+        self.assertEqual(stock[0]["CategoriaEstoque"], "ESCADA")
+        self.assertEqual(stock[0]["CodigoProduto"], "100")
+        self.assertEqual(stock[0]["QtdeEstoque"], 2)
+
     def test_homologation_blocks_git_push(self):
         with self.assertRaises(RuntimeError):
             atualizar_dashboard.validate_security_profile(
