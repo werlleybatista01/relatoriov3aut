@@ -175,6 +175,63 @@ def _public_open_tools(
     return sanitized
 
 
+def normalize_tool_stock(
+    raw_stock: List[Dict[str, Any]],
+    classifications: Dict[str, str],
+) -> List[Dict[str, Any]]:
+    """Inclui no payload o saldo de ferramentas devolvíveis no almoxarifado."""
+    grouped: Dict[str, Dict[str, Any]] = {}
+
+    for row in raw_stock:
+        product = legacy.safe_text(row.get("NomeProduto"))
+        code = legacy.normalize_code(row.get("IDCodigo"))
+        if not product or not code:
+            continue
+
+        if legacy.guess_category(product) in {
+            "Uniformes",
+            "Botinas",
+            "Sacolas",
+        }:
+            continue
+
+        classification = legacy.classification_for_product(
+            code,
+            product,
+            classifications,
+        )
+        if classification != "devolvivel":
+            continue
+
+        item = grouped.setdefault(
+            code,
+            {
+                "Categoria": "Ferramentas",
+                "CategoriaEstoque": legacy.safe_text(row.get("Categoria")),
+                "CodigoProduto": code,
+                "Nome do Produto": product,
+                "QtdeEstoque": 0.0,
+                "EstoqueMin": 0.0,
+                "PacotesEstoque": 0.0,
+                "PacotesMin": 0.0,
+                "SacolasPorPacote": 0,
+                "ProdutosOrigem": [],
+            },
+        )
+        item["QtdeEstoque"] += legacy.to_float(row.get("QtdeEstoque"))
+        item["EstoqueMin"] += legacy.to_float(row.get("EstoqueMin"))
+        if product not in item["ProdutosOrigem"]:
+            item["ProdutosOrigem"].append(product)
+
+    return sorted(
+        grouped.values(),
+        key=lambda item: (
+            legacy.norm(item.get("CategoriaEstoque")),
+            legacy.norm(item.get("Nome do Produto")),
+        ),
+    )
+
+
 def validate_security_profile(
     *,
     git_push: bool | None = None,
@@ -449,6 +506,7 @@ def main() -> int:
                 classifications,
             )
             stock = legacy.normalize_estoque(raw_stock)
+            stock.extend(normalize_tool_stock(raw_stock, classifications))
             open_tools, tool_diagnostics = legacy.normalize_open_tools(
                 raw,
                 raw_returns,
