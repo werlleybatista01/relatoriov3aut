@@ -13,6 +13,7 @@ export function createToolsModule({
   documentRef = document
 }) {
   const openTools = selectors.openTools;
+  const stock = selectors.stock;
   const esc = escapeHtml;
   const fmt = formatNumber;
   const n = toNumber;
@@ -34,6 +35,101 @@ export function createToolsModule({
         (r.Colaborador || "") + " " + (r.Produto || "")
       ).includes(termo)
     );
+  }
+  function estoqueFerramentas() {
+    return stock.filter((row) => row.Categoria === "Ferramentas");
+  }
+  function nomeEstoqueFerramenta(row) {
+    return row["Nome do Produto"] || row.Produto || row.NomeProduto || "Ferramenta";
+  }
+  function codigoFerramenta(row) {
+    return String(row.CodigoProduto || row.Codigo || row.Item || "").trim();
+  }
+  function ferramentaCombinaTermo(row, termo) {
+    return normalizarPesquisaFerramentas(
+      [
+        nomeEstoqueFerramenta(row),
+        row.CategoriaEstoque,
+        row.Modelo,
+        row.ProdutosOrigem?.join(" ")
+      ].join(" ")
+    ).includes(termo);
+  }
+  function linhasLocalizacaoFerramentas() {
+    const termo = normalizarPesquisaFerramentas(ferramentasBusca);
+    if (!termo) return [];
+
+    const openMatches = openTools.filter((row) =>
+      normalizarPesquisaFerramentas(
+        [
+          row.Colaborador,
+          row.Produto,
+          row.CategoriaEstoque,
+          row.NumeroRetirada
+        ].join(" ")
+      ).includes(termo)
+    );
+    const openRows = openMatches.map((row) => ({
+      type: "person",
+      code: row.CodigoProduto || "",
+      product: row.Produto,
+      quantity: n(row.QuantidadeEmAberto),
+      holder: row.Colaborador || "Não informado",
+      detail: row.DataRetirada ? `Retirada em ${row.DataRetirada}` : "Com colaborador",
+      statusClass: row.StatusClasse,
+      statusText: row.StatusTexto || row.Status || "Com colaborador"
+    }));
+    const openKeys = new Set(
+      openMatches.map((row) => row.CodigoProduto || normalizarPesquisaFerramentas(row.Produto))
+    );
+
+    estoqueFerramentas()
+      .filter((row) => {
+        const code = codigoFerramenta(row);
+        return (
+          ferramentaCombinaTermo(row, termo) ||
+          (code && openKeys.has(code)) ||
+          openKeys.has(normalizarPesquisaFerramentas(nomeEstoqueFerramenta(row)))
+        );
+      })
+      .forEach((row) => {
+        const available = n(row.QtdeEstoque);
+        if (available <= 0) return;
+        openRows.push({
+          type: "stock",
+          code: codigoFerramenta(row),
+          product: nomeEstoqueFerramenta(row),
+          quantity: available,
+          holder: "Almoxarifado",
+          detail: "Disponível no estoque",
+          statusClass: "stock",
+          statusText: "Disponível"
+        });
+      });
+
+    return openRows.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "person" ? -1 : 1;
+      return normalizarPesquisaFerramentas(a.product).localeCompare(
+        normalizarPesquisaFerramentas(b.product)
+      );
+    });
+  }
+  function renderLocalizacaoFerramentas() {
+    const termo = normalizarPesquisaFerramentas(ferramentasBusca);
+    if (!termo) return "";
+
+    const rows = linhasLocalizacaoFerramentas();
+    if (!rows.length) {
+      return `<div class="tools-dropdown"><div class="tools-dropdown-empty">Nenhuma ferramenta ou colaborador encontrado para esta pesquisa.</div></div>`;
+    }
+
+    const total = rows.reduce((sum, row) => sum + n(row.quantity), 0);
+    return `<div class="tools-dropdown"><div class="tools-dropdown-head"><span>${fmt(rows.length)} localização(ões) encontrada(s)</span><span>${fmt(total)} unidade(s)</span></div><div class="tools-dropdown-list">${rows
+      .map(
+        (row) =>
+          `<div class="tools-location-row"><div><b>${esc(row.product)}</b><small>${esc(row.detail)}</small></div><strong>${fmt(row.quantity)} un.</strong><div><b>${esc(row.holder)}</b></div>${statusFerramentaBadge(row.statusClass, row.statusText)}</div>`
+      )
+      .join("")}</div></div>`;
   }
   function agruparFerramentasPorPessoa(arr) {
     let m = {};
@@ -135,6 +231,8 @@ export function createToolsModule({
   function atualizarPesquisaFerramentas() {
     let input = documentRef.getElementById("ferramentasBuscaNome");
     if (input) ferramentasBusca = input.value;
+    const localizacao = documentRef.getElementById("ferramentasLocalizacao");
+    if (localizacao) localizacao.innerHTML = renderLocalizacaoFerramentas();
     let arr = ferramentasAbertasFiltradas(),
       pessoas = agruparFerramentasPorPessoa(arr),
       box = documentRef.getElementById("ferramentasResultados");
@@ -164,7 +262,7 @@ export function createToolsModule({
     documentRef.getElementById("genericSub").textContent =
       "Mostra apenas equipamentos que precisam retornar. Ferramentas fixas e materiais de consumo ficam fora da contagem.";
     documentRef.getElementById("genericContent").innerHTML =
-      `<div class="panel"><h2>Pesquisar colaborador ou ferramenta</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento. Itens devolvidos, ferramentas fixas e materiais de consumo não aparecem.</p><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div></div><div id="ferramentasResultados"></div>`;
+      `<div class="panel"><h2>Pesquisar colaborador ou ferramenta</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento. Itens devolvidos, ferramentas fixas e materiais de consumo não aparecem.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
     atualizarPesquisaFerramentas();
   }
 
