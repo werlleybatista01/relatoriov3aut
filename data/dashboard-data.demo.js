@@ -87,7 +87,42 @@ export const demoDashboardData = Object.freeze({
       PacotesMin: 3,
       SacolasPorPacote: 100,
       ProdutosOrigem: ["SACOLA PARA COLETA"]
+    }),
+    Object.freeze({
+      Categoria: "Ferramentas",
+      CategoriaEstoque: "ESCADA",
+      CodigoProduto: "100",
+      "Nome do Produto": "ESCADA EXTENSIVA FIBRA",
+      QtdeEstoque: 3,
+      EstoqueMin: 0,
+      PacotesEstoque: 0,
+      PacotesMin: 0,
+      SacolasPorPacote: 0,
+      ProdutosOrigem: ["ESCADA EXTENSIVA FIBRA"]
     })
   ]),
-  openTools: Object.freeze([])
+  openTools: Object.freeze([
+    Object.freeze({
+      NumeroRetirada: "RET-TESTE-ESCADA",
+      CodigoProduto: "100",
+      CodigoCliente: "COL-TESTE",
+      Colaborador: "COLABORADOR TESTE",
+      Produto: "ESCADA EXTENSIVA FIBRA",
+      CategoriaEstoque: "ESCADA",
+      QuantidadeEmAberto: 1,
+      DataRetirada: "10/07/2026",
+      DataRetiradaISO: "2026-07-10",
+      PrazoDevolucao: "17/07/2026",
+      PrazoDevolucaoISO: "2026-07-17",
+      DiasFora: 0,
+      DiasAtraso: 0,
+      Status: "No prazo",
+      StatusClasse: "ok",
+      StatusTexto: "Vence em 7 dia(s)",
+      TelefoneWhatsApp: "",
+      Setor: "OBRAS",
+      Departamento: "OBRAS",
+      Observacao: ""
+    })
+  ])
 });
