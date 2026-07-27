@@ -1,24 +1,167 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Monitoramento | Almoxarifado</title>
-<style>
-:root{--bg:#06101c;--p:#0d1a2b;--l:#203149;--t:#f5f8fc;--m:#91a2b7;--b:#2185ff;--g:#31d17c;--y:#ffb020;--r:#ff525a;--v:#8c64ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 55% -10%,#16304e,#081321 34%,#040910);color:var(--t);font-family:Segoe UI,Arial,sans-serif}.app{min-height:100vh;display:grid;grid-template-columns:230px 1fr}.side{background:#07111e;border-right:1px solid #17283d;padding:22px 13px}.brand{font-weight:800;padding:10px 10px 25px}.brand small{display:block;color:var(--m);font-weight:400}.nav button{width:100%;border:0;background:none;color:#cad5e2;text-align:left;padding:13px;border-radius:9px;margin:3px 0;cursor:pointer}.nav button.active,.nav button:hover{background:linear-gradient(135deg,#0c7dff,#1756d7);color:#fff}.main{padding:0 24px 40px;min-width:0}.top{height:70px;border-bottom:1px solid #15263b;display:flex;align-items:center;gap:12px}.search{flex:1;max-width:470px;background:#0c1828;border:1px solid #1d3048;border-radius:9px;color:#fff;padding:11px 14px}.btn{margin-left:auto;background:#0e1c2e;color:#dbe6f2;border:1px solid #28415f;border-radius:8px;padding:9px 12px}.hero{display:flex;justify-content:space-between;padding:22px 0 14px}.hero h1{font-size:23px;margin:0 0 6px}.hero p,.muted{color:var(--m);margin:0}.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.card,.panel{background:linear-gradient(145deg,#112139,#0a1626);border:1px solid #1d3047;border-radius:11px}.card{padding:15px;min-height:120px}.num{font-size:31px;font-weight:800;margin:15px 0 4px}.hint{font-size:10px;color:var(--m)}.g{color:var(--g)}.y{color:var(--y)}.r{color:var(--r)}.v{color:var(--v)}.b{color:#4b9fff}.grid{display:grid;grid-template-columns:1.5fr .9fr;gap:12px;margin-top:13px}.panel{padding:15px}.panel h3{font-size:14px;margin:0 0 13px}.wrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}.table th{color:#8191a5;text-align:left;font-weight:500;padding:9px;border-bottom:1px solid #293a50}.table td{padding:11px 9px;border-bottom:1px solid #1a2b40}.tag{padding:5px 8px;border-radius:999px;font-size:10px;font-weight:700}.ok{background:#153d2a;color:#4fe095}.proc{background:#30295b;color:#aa8cff}.err{background:#4a2024;color:#ff7278}.ign{background:#4a3b18;color:#ffc14d}.other{background:#243449;color:#b8c5d5}.person{padding:11px 0;border-bottom:1px solid #1c2d42}.name{font-size:12px;font-weight:700}.sub{font-size:10px;color:var(--m);margin-top:4px}.empty{padding:28px 15px;text-align:center;color:var(--m);border:1px dashed #2a3d55;border-radius:9px}.section{display:none}.section.active{display:block}.health{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.health div{background:#0a1727;border:1px solid #1e3149;border-radius:9px;padding:14px}.filters{display:flex;gap:8px;margin-bottom:12px}.filters select{background:#0a1626;color:#fff;border:1px solid #263b55;border-radius:7px;padding:7px}
-@media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}}@media(max-width:800px){.app{display:block}.side{display:none}.main{padding:0 13px 40px}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.health{grid-template-columns:1fr}.hero{display:block}.hero .muted{margin-top:8px}}@media(max-width:450px){.card{min-height:105px}.num{font-size:26px}}
-</style></head><body><div class="app"><aside class="side"><div class="brand">◇ ALMOXARIFADO<small>Monitoramento</small></div><div class="nav"><button class="active" data-tab="geral">⌂ Visão Geral</button><button data-tab="notificacoes">♧ Notificações</button><button data-tab="pendencias">◷ Devoluções Pendentes</button><button data-tab="erros">△ Erros</button><button data-tab="saude">✓ Saúde do Sistema</button><button onclick="history.back()">← Voltar</button></div></aside><main class="main"><header class="top"><input id="q" class="search" placeholder="Buscar colaborador, produto, retirada..."><span id="api" class="muted">API não configurada</span><button id="refresh" class="btn">↻ Atualizar</button></header><div class="hero"><div><h1>Monitoramento do Almoxarifado</h1><p>Notificações, devoluções e situação operacional.</p></div><div class="muted">Última atualização: <b id="updated">—</b></div></div>
-<section id="geral" class="section active"><div class="kpis"><div class="card">Notificações<div class="num" id="total">—</div><div class="hint">registros</div></div><div class="card">Enviadas<div class="num g" id="sent">—</div></div><div class="card">Processando<div class="num v" id="processing">—</div></div><div class="card">Erros históricos<div class="num r" id="errors">—</div><div class="hint">não significa falha atual</div></div><div class="card">Ignoradas<div class="num y" id="ignored">—</div></div><div class="card">Pessoas pendentes<div class="num b" id="people">—</div><div class="hint"><span id="items">—</span> itens</div></div></div><div class="grid"><div class="panel"><h3>Últimas notificações</h3><div class="wrap"><table class="table"><thead><tr><th>Colaborador</th><th>Produto</th><th>Tipo</th><th>Qtd.</th><th>Status</th><th>Atualização</th></tr></thead><tbody id="latest"></tbody></table></div></div><div class="panel"><h3>Requer atenção</h3><div id="attention"></div></div></div></section>
-<section id="notificacoes" class="section"><div class="panel"><h3>Histórico de notificações</h3><div class="filters"><select id="sf"><option value="">Todos os status</option><option>ENVIADO</option><option>PROCESSANDO</option><option value="ERRO">Erros</option><option value="IGNOR">Ignoradas</option></select><select id="tf"><option value="">Todos os tipos</option></select></div><div class="wrap"><table class="table"><thead><tr><th>Colaborador</th><th>Produto</th><th>Tipo</th><th>Qtd.</th><th>Status</th><th>Data/Hora</th></tr></thead><tbody id="rows"></tbody></table></div></div></section>
-<section id="pendencias" class="section"><div class="panel"><h3>Devoluções pendentes</h3><div id="pending"></div></div></section>
-<section id="erros" class="section"><div class="panel"><h3>Histórico de erros</h3><p class="sub">Separado para não confundir registros antigos com falhas ativas.</p><div class="wrap"><table class="table"><thead><tr><th>Colaborador</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atualização</th></tr></thead><tbody id="errorRows"></tbody></table></div></div></section>
-<section id="saude" class="section"><div class="panel"><h3>Saúde das fontes</h3><div class="health"><div>Dashboard API<br><b id="h1">—</b></div><div>Notificações<br><b id="h2">—</b></div><div>Devoluções<br><b id="h3">—</b></div></div><p class="sub">Indicadores informados pela API do dashboard.</p></div></section>
-</main></div><script>
-const CONFIG={API_URL:"https://mcp-n8n.gtcqed.easypanel.host/webhook/almoxarifado/dashboard/api"};let D=null;
-const $=x=>document.getElementById(x), e=v=>String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])), dt=v=>{let d=new Date(v);return !v||isNaN(d)?"—":d.toLocaleString("pt-BR")};
-function cls(s){s=String(s||"").toUpperCase();return s==="ENVIADO"?"ok":s==="PROCESSANDO"?"proc":s.includes("ERRO")?"err":s.includes("IGNOR")?"ign":"other"}function tag(s){return `<span class="tag ${cls(s)}">${e(s||"SEM STATUS")}</span>`}
-function tr(r){return `<tr><td>${e(r.nome||r.colaborador||"—")}</td><td>${e(r.produto||r.nome_produto||"—")}</td><td>${e(r.tipo||"—")}</td><td>${e(r.quantidade??"—")}</td><td>${tag(r.status)}</td><td>${dt(r.updatedAt||r.updated_at||r.createdAt||r.data_hora)}</td></tr>`}
-function render(d){D=d;let r=d.resumo||{};$("total").textContent=r.notificacoes_total??0;$("sent").textContent=r.enviados??0;$("processing").textContent=r.processando??0;$("errors").textContent=r.erros??0;$("ignored").textContent=r.ignorados??0;$("people").textContent=r.pessoas_com_pendencia??0;$("items").textContent=r.itens_pendentes??0;$("updated").textContent=dt(d.gerado_em);$("api").textContent="● API online";
-let n=d.notificacoes||[];$("latest").innerHTML=n.slice(0,8).map(tr).join("")||'<tr><td colspan="6"><div class="empty">Nenhuma notificação.</div></td></tr>';let types=[...new Set(n.map(x=>x.tipo).filter(Boolean))];$("tf").innerHTML='<option value="">Todos os tipos</option>'+types.map(x=>`<option>${e(x)}</option>`).join("");
-let er=n.filter(x=>String(x.status||"").toUpperCase().includes("ERRO"));$("errorRows").innerHTML=er.map(x=>`<tr><td>${e(x.nome||"—")}</td><td>${e(x.produto||"—")}</td><td>${e(x.tipo||"—")}</td><td>${tag(x.status)}</td><td>${dt(x.updatedAt||x.updated_at||x.createdAt)}</td></tr>`).join("")||'<tr><td colspan="5"><div class="empty">Nenhum erro.</div></td></tr>';
-let p=d.devolucoes_pendentes?.pessoas||[];$("attention").innerHTML=p.slice(0,5).map(x=>`<div class="person"><div class="name">${e(x.nome)}</div><div class="sub">${(x.itens||[]).length} item(ns) pendente(s)</div></div>`).join("")||'<div class="empty">Nenhuma devolução pendente no momento.</div>';$("pending").innerHTML=p.length?p.map(x=>`<div class="person"><div class="name">${e(x.nome)}</div><div class="sub">${(x.itens||[]).map(i=>`${e(i.nome_produto||i.produto||"Item")} • ${e(i.quantidade??1)} un. • ${e(i.dias_em_aberto??"—")} dias`).join("<br>")}</div></div>`).join(""):'<div class="empty">Nenhuma devolução pendente no momento.</div>';
-let h=d.saude||{};$("h1").textContent=h.api||"Não disponível";$("h2").textContent=h.fonte_notificacoes||"Não disponível";$("h3").textContent=h.fonte_devolucoes||"Não disponível";filter()}
-function filter(){if(!D)return;let q=$("q").value.toLowerCase(),sf=$("sf").value.toUpperCase(),tf=$("tf").value;let a=(D.notificacoes||[]).filter(r=>(!q||JSON.stringify(r).toLowerCase().includes(q))&&(!sf||String(r.status||"").toUpperCase().includes(sf))&&(!tf||r.tipo===tf));$("rows").innerHTML=a.map(tr).join("")||'<tr><td colspan="6"><div class="empty">Nenhum registro encontrado.</div></td></tr>'}
-async function load(){if(CONFIG.API_URL.includes("COLOCAR_AQUI"))return;try{let r=await fetch(CONFIG.API_URL,{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);let d=await r.json();if(d.ok!==true)throw Error("Resposta inválida");render(d)}catch(x){$("api").textContent="● Falha na API"}}
-document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x.dataset.tab===b.dataset.tab));document.querySelectorAll(".section").forEach(x=>x.classList.toggle("active",x.id===b.dataset.tab))});$("q").oninput=filter;$("sf").onchange=filter;$("tf").onchange=filter;$("refresh").onclick=load;load();setInterval(load,60000);
-</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Monitoramento | Almoxarifado</title>
+  <style>
+    :root{--bg:#06101c;--p:#0d1a2b;--l:#203149;--t:#f5f8fc;--m:#91a2b7;--b:#2185ff;--g:#31d17c;--y:#ffb020;--r:#ff525a;--v:#8c64ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 55% -10%,#16304e,#081321 34%,#040910);color:var(--t);font-family:Segoe UI,Arial,sans-serif}.app{min-height:100vh;display:grid;grid-template-columns:230px 1fr}.side{background:#07111e;border-right:1px solid #17283d;padding:22px 13px}.brand{font-weight:800;padding:10px 10px 25px}.brand small{display:block;color:var(--m);font-weight:400}.nav button{width:100%;border:0;background:none;color:#cad5e2;text-align:left;padding:13px;border-radius:9px;margin:3px 0;cursor:pointer}.nav button.active,.nav button:hover{background:linear-gradient(135deg,#0c7dff,#1756d7);color:#fff}.main{padding:0 24px 40px;min-width:0}.top{min-height:70px;border-bottom:1px solid #15263b;display:flex;align-items:center;gap:12px}.search,.control{background:#0c1828;border:1px solid #1d3048;border-radius:9px;color:#fff;padding:10px 12px}.search{flex:1;max-width:470px}.btn{background:#0e1c2e;color:#dbe6f2;border:1px solid #28415f;border-radius:8px;padding:10px 12px;cursor:pointer}.btn:hover{border-color:#4b78aa}.btn:disabled{opacity:.6;cursor:wait}.refresh{margin-left:auto}.hero{display:flex;justify-content:space-between;padding:22px 0 14px;gap:16px}.hero h1{font-size:23px;margin:0 0 6px}.hero p,.muted{color:var(--m);margin:0}.kpis{display:grid;grid-template-columns:repeat(4,minmax(145px,1fr));gap:10px}.card,.panel{background:linear-gradient(145deg,#112139,#0a1626);border:1px solid #1d3047;border-radius:11px}.card{padding:15px;min-height:118px}.num{font-size:29px;font-weight:800;margin:13px 0 4px}.hint{font-size:11px;color:var(--m);line-height:1.35}.g{color:var(--g)}.y{color:var(--y)}.r{color:var(--r)}.v{color:var(--v)}.b{color:#4b9fff}.grid{display:grid;grid-template-columns:1.5fr .9fr;gap:12px;margin-top:13px}.panel{padding:15px}.panel h3{font-size:14px;margin:0 0 13px}.wrap{overflow:auto}.table{width:100%;border-collapse:collapse;font-size:12px;min-width:760px}.table th{color:#8191a5;text-align:left;font-weight:500;padding:9px;border-bottom:1px solid #293a50}.table td{padding:11px 9px;border-bottom:1px solid #1a2b40}.tag{display:inline-block;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:700}.ok,.normal{background:#153d2a;color:#4fe095}.proc{background:#30295b;color:#aa8cff}.err,.critical{background:#4a2024;color:#ff7278}.ign,.attention{background:#4a3b18;color:#ffc14d}.other{background:#243449;color:#b8c5d5}.person,.pending-card{padding:12px 0;border-bottom:1px solid #1c2d42}.pending-card:last-child,.person:last-child{border-bottom:0}.name{font-size:12px;font-weight:700}.sub{font-size:11px;color:var(--m);margin-top:5px;line-height:1.5}.empty{padding:28px 15px;text-align:center;color:var(--m);border:1px dashed #2a3d55;border-radius:9px}.section{display:none}.section.active{display:block}.health{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.health div{background:#0a1727;border:1px solid #1e3149;border-radius:9px;padding:14px}.health .wide{grid-column:span 2}.filters{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr)) auto;gap:8px;margin-bottom:10px}.filters .control{width:100%;min-width:0}.filter-meta,.pagination{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:10px 0;color:var(--m);font-size:12px}.pagination-controls{display:flex;align-items:center;gap:8px}.last-notification strong{display:block;font-size:15px;margin-bottom:5px}.last-notification span{display:block;color:var(--m);font-size:12px}.status-dot::before{content:"●";margin-right:5px}.loading{color:#7ab6ff}.success-rule{cursor:help}.pending-rule{margin-bottom:12px}.api-age{font-size:18px;display:block;margin:6px 0}.section-note{margin:-5px 0 14px}.mobile-only{display:none}
+    @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.filters{grid-template-columns:repeat(3,minmax(140px,1fr))}}
+    @media(max-width:800px){.app{display:block}.side{padding:8px 10px;border-right:0;border-bottom:1px solid #17283d;position:sticky;top:0;z-index:5}.brand{padding:6px 8px}.brand small{display:inline;margin-left:6px}.nav{display:flex;gap:4px;overflow-x:auto;padding-bottom:4px}.nav button{width:auto;min-width:max-content;padding:9px 11px}.main{padding:0 13px 40px}.top{flex-wrap:wrap;padding:10px 0}.search{max-width:none;min-width:calc(100% - 110px)}.refresh{margin-left:0}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.health{grid-template-columns:1fr}.health .wide{grid-column:auto}.hero{display:block}.hero .muted{margin-top:8px}.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.mobile-only{display:inline}}
+    @media(max-width:450px){.card{min-height:105px}.num{font-size:25px}.filters{grid-template-columns:1fr}.filters .btn{width:100%}.pagination{align-items:stretch}.pagination-controls{width:100%;justify-content:space-between}.top .muted{font-size:11px}.search{min-width:100%}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">◇ ALMOXARIFADO<small>Monitoramento</small></div>
+    <div class="nav">
+      <button class="active" data-tab="geral">⌂ Visão Geral</button>
+      <button data-tab="notificacoes">♧ Notificações</button>
+      <button data-tab="pendencias">◷ Devoluções</button>
+      <button data-tab="erros">△ Erros</button>
+      <button data-tab="saude">✓ Saúde</button>
+      <button id="back">← Voltar</button>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <input id="q" class="search" placeholder="Buscar colaborador, produto, retirada..." aria-label="Busca textual">
+      <span id="api" class="muted status-dot">Aguardando API</span>
+      <button id="refresh" class="btn refresh">↻ Atualizar</button>
+    </header>
+    <div class="hero">
+      <div><h1>Monitoramento do Almoxarifado</h1><p>Notificações, devoluções e situação operacional.</p></div>
+      <div class="muted">Última atualização: <b id="updated">—</b></div>
+    </div>
+
+    <section id="geral" class="section active">
+      <div class="kpis">
+        <div class="card">Total de notificações<div class="num" id="total">—</div><div class="hint">registros disponíveis na API</div></div>
+        <div class="card">Enviadas<div class="num g" id="sent">—</div></div>
+        <div class="card">Processando<div class="num v" id="processing">—</div></div>
+        <div class="card">Ignoradas<div class="num y" id="ignored">—</div><div class="hint">não entram na taxa de sucesso</div></div>
+        <div class="card">Erros atuais<div class="num g" id="currentErrors">0</div><div class="hint">Nenhum erro ativo identificado com segurança</div></div>
+        <div class="card">Erros históricos<div class="num r" id="historicalErrors">—</div><div class="hint">Histórico não representa necessariamente falhas ativas.</div></div>
+        <div class="card">Enviadas hoje<div class="num b" id="sentToday">—</div><div class="hint">horário local do navegador</div></div>
+        <div class="card success-rule" title="Taxa = enviadas ÷ (enviadas + erros históricos). Registros ignorados não entram no cálculo.">Taxa de sucesso<div class="num g" id="successRate">—</div><div class="hint">enviadas ÷ (enviadas + erros históricos)</div></div>
+      </div>
+      <div class="grid">
+        <div class="panel"><h3>Últimas notificações</h3><div class="wrap"><table class="table"><thead><tr><th>Colaborador</th><th>Produto</th><th>Tipo</th><th>Qtd.</th><th>Status</th><th>Atualização</th></tr></thead><tbody id="latest"></tbody></table></div></div>
+        <div class="panel"><h3>Última notificação enviada</h3><div id="lastSent" class="last-notification empty">Nenhuma notificação enviada.</div><h3 style="margin-top:18px">Requer atenção</h3><div id="attention"></div></div>
+      </div>
+    </section>
+
+    <section id="notificacoes" class="section">
+      <div class="panel">
+        <h3>Histórico de notificações</h3>
+        <div class="filters">
+          <select id="pf" class="control" aria-label="Período"><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="all" selected>Todos</option></select>
+          <select id="sf" class="control" aria-label="Status"><option value="">Todos os status</option></select>
+          <select id="tf" class="control" aria-label="Tipo"><option value="">Todos os tipos</option></select>
+          <select id="cf" class="control" aria-label="Colaborador"><option value="">Todos os colaboradores</option></select>
+          <select id="pageSize" class="control" aria-label="Registros por página"><option>25</option><option>50</option><option>100</option></select>
+          <button id="clearFilters" class="btn">Limpar filtros</button>
+        </div>
+        <div class="filter-meta"><span id="count">Exibindo 0 de 0 registros</span><span>Busca e filtros combinados, sem recarregar a API.</span></div>
+        <div class="wrap"><table class="table"><thead><tr><th>Colaborador</th><th>Produto</th><th>Tipo</th><th>Qtd.</th><th>Status</th><th>Data/Hora</th></tr></thead><tbody id="rows"></tbody></table></div>
+        <div class="pagination"><span id="pageRange">0–0 de 0</span><div class="pagination-controls"><button id="prev" class="btn">Anterior</button><b id="pageInfo">Página 1 de 1</b><button id="next" class="btn">Próxima</button></div></div>
+      </div>
+    </section>
+
+    <section id="pendencias" class="section">
+      <div class="panel"><h3>Devoluções pendentes</h3><p class="sub pending-rule" title="Classificação visual do frontend baseada em dias em aberto.">Classificação visual: até 7 dias = Normal; 8–14 dias = Atenção; 15+ dias = Crítico.</p><div id="pending"></div></div>
+    </section>
+
+    <section id="erros" class="section">
+      <div class="panel"><h3>Histórico de erros</h3><p class="sub section-note">Histórico não representa necessariamente falhas ativas. A API atual não fornece um sinal seguro de erro ativo.</p><div class="wrap"><table class="table"><thead><tr><th>Colaborador</th><th>Produto</th><th>Tipo</th><th>Status</th><th>Atualização</th></tr></thead><tbody id="errorRows"></tbody></table></div></div>
+    </section>
+
+    <section id="saude" class="section">
+      <div class="panel"><h3>Saúde das fontes do dashboard</h3><div class="health"><div>Dashboard API<br><b id="h1">—</b></div><div>Fonte de notificações<br><b id="h2">—</b></div><div>Fonte de devoluções<br><b id="h3">—</b></div><div class="wide">Última atualização da API<br><b id="healthUpdated">—</b></div><div>Idade do dado<br><b id="healthAge" class="api-age">—</b><span id="ageClass" class="tag other">—</span></div></div><p class="sub">Saúde apresentada refere-se às fontes utilizadas por este dashboard. A idade mede o dado do dashboard e não representa, isoladamente, a saúde do Access, WAHA, Windows ou de todo o n8n.</p></div>
+    </section>
+  </main>
+</div>
+<script>
+  const CONFIG={API_URL:"https://mcp-n8n.gtcqed.easypanel.host/webhook/almoxarifado/dashboard/api",REFRESH_MS:60000};
+  let D=null,filtered=[],page=1,ageTimer=null;
+  const $=id=>document.getElementById(id);
+  const e=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+  const dateOf=row=>{const value=row.enviado_em||row.updatedAt||row.updated_at||row.createdAt||row.data_hora||row.data_movimentacao;return value?new Date(value):new Date(NaN)};
+  const validDate=value=>{const date=new Date(value);return Number.isNaN(date.getTime())?null:date};
+  const dt=value=>{const date=validDate(value);return date?date.toLocaleString("pt-BR"):"—"};
+  const ago=value=>{const date=validDate(value);if(!date)return "horário indisponível";const seconds=Math.max(0,Math.floor((Date.now()-date.getTime())/1000));if(seconds<60)return `há ${seconds} segundo${seconds===1?"":"s"}`;const minutes=Math.floor(seconds/60);if(minutes<60)return `há ${minutes} minuto${minutes===1?"":"s"}`;const hours=Math.floor(minutes/60);if(hours<24)return `há ${hours} hora${hours===1?"":"s"}`;const days=Math.floor(hours/24);return `há ${days} dia${days===1?"":"s"}`};
+  const statusClass=status=>{const value=String(status||"").toUpperCase();return value==="ENVIADO"?"ok":value==="PROCESSANDO"?"proc":value.includes("ERRO")?"err":value.includes("IGNOR")?"ign":"other"};
+  const tag=status=>`<span class="tag ${statusClass(status)}">${e(status||"SEM STATUS")}</span>`;
+  const rowHtml=row=>`<tr><td>${e(row.nome||row.colaborador||"—")}</td><td>${e(row.produto||row.nome_produto||"—")}</td><td>${e(row.tipo||"—")}</td><td>${e(row.quantidade??"—")}</td><td>${tag(row.status)}</td><td>${dt(dateOf(row))}</td></tr>`;
+  const uniqueSorted=(rows,key)=>[...new Set(rows.map(row=>String(row[key]||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  const fillSelect=(id,values,label)=>{$(id).innerHTML=`<option value="">${label}</option>`+values.map(value=>`<option value="${e(value)}">${e(value)}</option>`).join("")};
+  const sameLocalDay=date=>date&&date.toDateString()===new Date().toDateString();
+
+  function renderOverview(data){
+    const notifications=data.notificacoes||[],summary=data.resumo||{};
+    const sent=notifications.filter(row=>String(row.status||"").toUpperCase()==="ENVIADO");
+    const errors=notifications.filter(row=>String(row.status||"").toUpperCase().includes("ERRO"));
+    const sentToday=sent.filter(row=>sameLocalDay(validDate(row.enviado_em||row.updatedAt||row.createdAt))).length;
+    const denominator=sent.length+errors.length;
+    $("total").textContent=summary.notificacoes_total??notifications.length;
+    $("sent").textContent=summary.enviados??sent.length;
+    $("processing").textContent=summary.processando??notifications.filter(row=>String(row.status||"").toUpperCase()==="PROCESSANDO").length;
+    $("ignored").textContent=summary.ignorados??notifications.filter(row=>String(row.status||"").toUpperCase().includes("IGNOR")).length;
+    $("currentErrors").textContent="0";
+    $("historicalErrors").textContent=summary.erros??errors.length;
+    $("sentToday").textContent=sentToday;
+    $("successRate").textContent=denominator?`${(sent.length/denominator*100).toFixed(1).replace(".",",")}%`:"—";
+    const sorted=[...notifications].sort((a,b)=>dateOf(b)-dateOf(a));
+    $("latest").innerHTML=sorted.slice(0,8).map(rowHtml).join("")||'<tr><td colspan="6"><div class="empty">Nenhuma notificação.</div></td></tr>';
+    const lastSent=[...sent].sort((a,b)=>dateOf(b)-dateOf(a))[0];
+    $("lastSent").className=lastSent?"last-notification":"last-notification empty";
+    $("lastSent").innerHTML=lastSent?`<strong>${e(lastSent.produto||lastSent.nome_produto||lastSent.chave||"Notificação enviada")}</strong><span>${e(lastSent.nome||lastSent.colaborador||"Colaborador não informado")}</span><span>${ago(lastSent.enviado_em||dateOf(lastSent))}</span>`:"Nenhuma notificação enviada.";
+  }
+
+  function pendingItems(data){
+    const people=data.devolucoes_pendentes?.pessoas||[];
+    const loose=data.devolucoes_pendentes?.itens||[];
+    const nested=people.flatMap(person=>(person.itens||[]).map(item=>({...item,nome:item.nome||item.colaborador||person.nome||person.colaborador})));
+    return nested.length?nested:loose;
+  }
+
+  const pendingDays=item=>item.dias_em_aberto===""||item.dias_em_aberto===null||item.dias_em_aberto===undefined?NaN:Number(item.dias_em_aberto);
+  function pendingLevel(days){if(!Number.isFinite(days))return {label:"Sem idade",css:"other"};if(days<=7)return {label:"Normal",css:"normal"};if(days<=14)return {label:"Atenção",css:"attention"};return {label:"Crítico",css:"critical"}}
+  function renderPending(data){
+    const items=pendingItems(data);
+    const empty='<div class="empty">Nenhuma devolução pendente no momento.</div>';
+    $("attention").innerHTML=items.length?items.slice(0,5).map(item=>{const days=pendingDays(item);const level=pendingLevel(days);return `<div class="person"><div class="name">${e(item.nome||item.colaborador||"—")} <span class="tag ${level.css}">${level.label}</span></div><div class="sub">${e(item.nome_produto||item.produto||"Item")} • ${e(item.quantidade??1)} un.</div></div>`}).join(""):empty;
+    $("pending").innerHTML=items.length?items.map(item=>{const days=pendingDays(item);const level=pendingLevel(days);const withdrawal=item.data_retirada||item.data_movimentacao||item.retirado_em;return `<div class="pending-card"><div class="name">${e(item.nome||item.colaborador||"—")} <span class="tag ${level.css}">${level.label}</span></div><div class="sub"><b>${e(item.nome_produto||item.produto||"Item")}</b> • ${e(item.quantidade??1)} un.<br>Retirada: ${dt(withdrawal)} • Dias em aberto: ${Number.isFinite(days)?days:"não disponível"}</div></div>`}).join(""):empty;
+  }
+
+  function updateHealthAge(){
+    if(!D)return;const generated=validDate(D.gerado_em);const minutes=generated?Math.max(0,(Date.now()-generated.getTime())/60000):Infinity;
+    $("healthAge").textContent=generated?ago(generated):"Não disponível";
+    const state=minutes<=2?{label:"ATUALIZADO",css:"ok"}:minutes<=5?{label:"ATENÇÃO",css:"attention"}:{label:"DADO DESATUALIZADO",css:"critical"};
+    $("ageClass").textContent=state.label;$("ageClass").className=`tag ${state.css}`;
+  }
+  function renderHealth(data){const health=data.saude||{};$("h1").textContent=health.api||"Não disponível";$("h2").textContent=health.fonte_notificacoes||"Não disponível";$("h3").textContent=health.fonte_devolucoes||"Não disponível";$("healthUpdated").textContent=dt(data.gerado_em);updateHealthAge();clearInterval(ageTimer);ageTimer=setInterval(updateHealthAge,30000)}
+
+  function renderErrors(data){const errors=(data.notificacoes||[]).filter(row=>String(row.status||"").toUpperCase().includes("ERRO")).sort((a,b)=>dateOf(b)-dateOf(a));$("errorRows").innerHTML=errors.map(row=>`<tr><td>${e(row.nome||row.colaborador||"—")}</td><td>${e(row.produto||row.nome_produto||"—")}</td><td>${e(row.tipo||"—")}</td><td>${tag(row.status)}</td><td>${dt(dateOf(row))}</td></tr>`).join("")||'<tr><td colspan="5"><div class="empty">Nenhum erro histórico encontrado.</div></td></tr>'}
+
+  function periodMatches(row,period){if(period==="all")return true;const date=dateOf(row);if(Number.isNaN(date.getTime()))return false;const now=new Date();if(period==="today")return sameLocalDay(date);const start=new Date(now);start.setDate(start.getDate()-Number(period));return date>=start&&date<=now}
+  function applyFilters(resetPage=true){
+    if(!D)return;if(resetPage)page=1;const query=$("q").value.trim().toLocaleLowerCase("pt-BR"),period=$("pf").value,status=$("sf").value,type=$("tf").value,collaborator=$("cf").value;
+    filtered=(D.notificacoes||[]).filter(row=>periodMatches(row,period)&&(!status||String(row.status||"")===status)&&(!type||String(row.tipo||"")===type)&&(!collaborator||String(row.nome||row.colaborador||"")===collaborator)&&(!query||[row.chave,row.nome,row.colaborador,row.produto,row.nome_produto,row.tipo,row.status].some(value=>String(value||"").toLocaleLowerCase("pt-BR").includes(query)))).sort((a,b)=>dateOf(b)-dateOf(a));
+    renderPage();
+  }
+  function renderPage(){const size=Number($("pageSize").value)||25,total=filtered.length,pages=Math.max(1,Math.ceil(total/size));page=Math.min(Math.max(1,page),pages);const start=(page-1)*size,end=Math.min(start+size,total),visible=filtered.slice(start,end);$("rows").innerHTML=visible.map(rowHtml).join("")||'<tr><td colspan="6"><div class="empty">Nenhum registro encontrado.</div></td></tr>';$("count").textContent=`Exibindo ${visible.length} de ${total} registros`;$("pageRange").textContent=total?`${start+1}–${end} de ${total}`:"0–0 de 0";$("pageInfo").textContent=`Página ${page} de ${pages}`;$("prev").disabled=page<=1;$("next").disabled=page>=pages}
+  function populateFilters(rows){const selected={sf:$("sf").value,tf:$("tf").value,cf:$("cf").value};fillSelect("sf",uniqueSorted(rows,"status"),"Todos os status");fillSelect("tf",uniqueSorted(rows,"tipo"),"Todos os tipos");const names=[...new Set(rows.map(row=>String(row.nome||row.colaborador||"").trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));fillSelect("cf",names,"Todos os colaboradores");Object.entries(selected).forEach(([id,value])=>{if([...$(id).options].some(option=>option.value===value))$(id).value=value})}
+  function clearFilters(){$("q").value="";$("pf").value="all";$("sf").value="";$("tf").value="";$("cf").value="";applyFilters(true)}
+
+  function render(data){D=data;$("updated").textContent=dt(data.gerado_em);$("api").textContent="API online";$("api").className="muted status-dot g";renderOverview(data);renderPending(data);renderErrors(data);renderHealth(data);populateFilters(data.notificacoes||[]);applyFilters(true)}
+  async function load(){const button=$("refresh");button.disabled=true;button.textContent="↻ Atualizando...";$("api").textContent="Atualizando";$("api").className="muted status-dot loading";try{const response=await fetch(CONFIG.API_URL,{method:"GET",cache:"no-store",headers:{Accept:"application/json"}});if(!response.ok)throw Error(`HTTP ${response.status}`);const data=await response.json();if(data.ok!==true)throw Error("Resposta inválida");render(data)}catch(error){$("api").textContent=`Falha na API: ${error.message}`;$("api").className="muted status-dot r"}finally{button.disabled=false;button.textContent="↻ Atualizar"}}
+
+  document.querySelectorAll("[data-tab]").forEach(button=>button.addEventListener("click",()=>{document.querySelectorAll("[data-tab]").forEach(item=>item.classList.toggle("active",item.dataset.tab===button.dataset.tab));document.querySelectorAll(".section").forEach(section=>section.classList.toggle("active",section.id===button.dataset.tab))}));
+  ["q","pf","sf","tf","cf"].forEach(id=>$(id).addEventListener(id==="q"?"input":"change",()=>applyFilters(true)));
+  $("pageSize").addEventListener("change",()=>applyFilters(true));$("clearFilters").addEventListener("click",clearFilters);$("prev").addEventListener("click",()=>{page--;renderPage()});$("next").addEventListener("click",()=>{page++;renderPage()});$("refresh").addEventListener("click",load);$("back").addEventListener("click",()=>history.back());
+  load();setInterval(load,CONFIG.REFRESH_MS);
+</script>
+</body>
+</html>
