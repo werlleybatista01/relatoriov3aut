@@ -56,7 +56,14 @@ export function createHomeModule({ selectors, tools, documentRef = document }) {
           </div>
         </div>
       `;
-    }).join("");
+    }).join("") + `
+      <div class="card" role="button" tabindex="0"
+           data-action="open-monitoring">
+        <span class="icon">&#128202;</span>
+        <h2>Monitoramento</h2>
+        <p class="muted">Notificações e devoluções</p>
+      </div>
+    `;
   }
 
   return Object.freeze({ render });

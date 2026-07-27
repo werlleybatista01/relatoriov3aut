@@ -108,6 +108,9 @@ export function createDashboardApp(payload, documentRef = document) {
       case "open-category":
         openCategory(element.dataset.category);
         break;
+      case "open-monitoring":
+        documentRef.defaultView.location.assign("monitoramento.html");
+        break;
       case "navigate-home":
         navigation.showSection("home");
         break;
