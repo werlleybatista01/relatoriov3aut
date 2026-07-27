@@ -2199,6 +2199,35 @@ def validate_regression(
         )
 
 
+
+def validate_live_data_regression(
+    state: Dict[str, Any],
+    last_data_date: str,
+    record_count: int,
+) -> None:
+    """Preserva protecoes de dados sem usar a data nominal de um backup."""
+    previous_data_date = parse_iso_date(state.get("last_data_date"))
+    current_data_date = parse_iso_date(last_data_date)
+    if previous_data_date and current_data_date and current_data_date < previous_data_date and not ALLOW_BACKUP_REGRESSION:
+        raise RuntimeError(
+            "REGRESSAO BLOQUEADA: a ultima movimentacao do banco principal e "
+            f"{current_data_date:%d/%m/%Y}, mas o dashboard ja havia processado "
+            f"movimentacoes ate {previous_data_date:%d/%m/%Y}."
+        )
+    try:
+        previous_count = int(state.get("records") or state.get("record_count") or 0)
+    except Exception:
+        previous_count = 0
+    if previous_count > 0 and record_count < previous_count:
+        drop = (previous_count - record_count) / previous_count * 100
+        if drop > MAX_RECORD_DROP_PERCENT and not ALLOW_RECORD_DROP:
+            raise RuntimeError(
+                "QUEDA DE DADOS BLOQUEADA: os registros cairam de "
+                f"{previous_count} para {record_count} ({drop:.1f}%)."
+            )
+        log(f"AVISO: a quantidade de registros caiu de {previous_count} para {record_count} ({drop:.1f}%).")
+
+
 def run_git(
     args: List[str],
     *,
@@ -2209,6 +2238,9 @@ def run_git(
         cwd=REPO_DIR,
         text=True,
         capture_output=True,
+        creationflags=(
+            subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+        ),
     )
     if check and result.returncode != 0:
         detail = (result.stdout + "\n" + result.stderr).strip()

@@ -24,6 +24,7 @@ import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
+from scripts.access_readonly import ACCESS_DRIVER, read_tables_readonly
 from scripts.legacy import atualizar_index_github_v9 as legacy
 
 
@@ -51,6 +52,14 @@ INCLUDE_PERSONAL_DATA = legacy.env_bool(
 ALLOW_PUBLIC_PERSONAL_DATA = legacy.env_bool(
     "ALLOW_PUBLIC_PERSONAL_DATA",
     False,
+)
+ACCESS_DB_PATH = Path(
+    legacy.CONFIG.get("ACCESS_DB_PATH")
+    or r"C:\\Users\\werlley.batista\\Desktop\\Nova pasta\\Backup 25-05-2026 - Banco de Dados 11.0.mdb"
+)
+ACCESS_DB_PASSWORD = (
+    legacy.CONFIG.get("ACCESS_DB_PASSWORD")
+    or legacy.CONFIG.get("ACCESS_PASSWORD", "")
 )
 
 
@@ -458,35 +467,25 @@ def main() -> int:
     try:
         validate_security_profile()
         with legacy.ExecutionLock(legacy.LOCK_PATH):
-            legacy.sync_repository()
-
-            backup, backup_date, used_name_date = legacy.find_latest_backup()
-            legacy.log(
-                f"Backup selecionado: {backup} "
-                f"(data: {backup_date:%d/%m/%Y}; "
-                f"origem: {'nome' if used_name_date else 'modificação'})"
-            )
-            legacy.wait_until_file_is_stable(backup)
-
-            raw, method = legacy.read_table(
-                backup,
+            table_names = (
                 legacy.TABELA_RETIRADAS,
-            )
-            raw_stock, stock_method = legacy.read_table(
-                backup,
                 legacy.TABELA_ESTOQUE,
-            )
-            raw_returns, returns_method = legacy.read_table(
-                backup,
                 legacy.TABELA_DEVOLUCOES,
-            )
-            raw_exclusions, exclusions_method = legacy.read_table(
-                backup,
                 legacy.TABELA_EXCLUSOES,
-            )
-            raw_clients, clients_method = legacy.read_table(
-                backup,
                 legacy.TABELA_CLIENTES,
+            )
+            tables = read_tables_readonly(ACCESS_DB_PATH, table_names, ACCESS_DB_PASSWORD)
+            raw = tables[legacy.TABELA_RETIRADAS]
+            raw_stock = tables[legacy.TABELA_ESTOQUE]
+            raw_returns = tables[legacy.TABELA_DEVOLUCOES]
+            raw_exclusions = tables[legacy.TABELA_EXCLUSOES]
+            raw_clients = tables[legacy.TABELA_CLIENTES]
+            method = "pyodbc-readonly"
+            stock_method = returns_method = method
+            exclusions_method = clients_method = method
+            legacy.log(
+                f"Banco Access principal lido diretamente: {ACCESS_DB_PATH} "
+                f"(driver: {ACCESS_DRIVER}; somente leitura)"
             )
 
             legacy.log(
@@ -529,9 +528,8 @@ def main() -> int:
             last_data_date = max(dates) if dates else ""
 
             state = legacy.load_state()
-            legacy.validate_regression(
+            legacy.validate_live_data_regression(
                 state,
-                backup_date,
                 last_data_date,
                 len(data),
             )
@@ -559,8 +557,8 @@ def main() -> int:
                 {
                     "version": 11,
                     "architecture": "modular-data-file-v2.0.0",
-                    "backup_file": str(backup),
-                    "backup_date": backup_date.isoformat(),
+                    "source_mode": "access-direct-readonly",
+                    "source_file": str(ACCESS_DB_PATH),
                     "last_data_date": last_data_date,
                     "records": len(data),
                     "operating_records": len(operating_rows),
