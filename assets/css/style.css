@@ -3414,3 +3414,160 @@ select:focus-visible {
     gap: 3px;
   }
 }
+
+/* Refinamento mobile 2 — evita corte no topo e conteúdo sob a navegação. */
+@media (max-width: 600px) {
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    padding-top: max(7px, env(safe-area-inset-top));
+  }
+
+  .header {
+    align-items: stretch;
+  }
+
+  .datebox {
+    margin-top: 2px;
+  }
+
+  .wrap {
+    padding-top: 10px;
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  }
+
+  #sacolas {
+    min-height: auto;
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .bags-shell {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  }
+
+  .bags-side-nav {
+    bottom: max(8px, env(safe-area-inset-bottom));
+    max-width: calc(100vw - 16px);
+  }
+
+  .bags-view-header {
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .bags-view-header h2 {
+    font-size: 20px;
+  }
+
+  .bags-mode-badge {
+    align-self: flex-start;
+  }
+
+  .bags-executive-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bags-kpi-card {
+    padding: 11px;
+  }
+
+  .bags-kpi-card b,
+  .bags-overview-stock-value b,
+  .bags-monthly-average-card > b {
+    font-size: 23px;
+  }
+
+  .bags-overview-stock-card {
+    width: 100%;
+  }
+
+  .bags-overview-stock-metrics article {
+    padding: 10px;
+  }
+
+  .bags-overview-insight-list {
+    gap: 8px;
+  }
+
+  .bags-overview-insight-list > div,
+  .bags-executive-insights article {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .bags-overview-insight-list p,
+  .bags-executive-insights p {
+    font-size: 13px;
+    line-height: 1.35;
+  }
+
+  .bags-overview-decision {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .bags-overview-decision h3,
+  .bags-recommendation h3 {
+    font-size: 18px;
+  }
+
+  .bags-overview-decision p,
+  .bags-recommendation p {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .bags-chart-panel {
+    overflow: hidden;
+  }
+
+  .bags-line-chart {
+    margin: 4px -4px 0;
+    padding-bottom: 4px;
+  }
+
+  .bags-line-chart svg {
+    width: 100%;
+    min-width: 430px;
+    max-height: 250px;
+  }
+
+  .bags-chart-legend {
+    gap: 8px;
+    font-size: 11px;
+  }
+
+  .bags-recommendation {
+    grid-template-columns: 38px minmax(0, 1fr);
+    margin-bottom: 10px;
+  }
+
+  .bags-recommendation > i {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 420px) {
+  .bags-executive-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .bags-line-chart svg {
+    min-width: 390px;
+    max-height: 232px;
+  }
+
+  .bags-nav-button {
+    min-height: 42px;
+  }
+
+  .bags-nav-icon {
+    font-size: 17px;
+  }
+}
