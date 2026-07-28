@@ -18,7 +18,8 @@ test("index é uma casca sem CSS ou JavaScript embutido", async () => {
 test("main apenas inicializa a aplicação", async () => {
   const main = await readFile(new URL("../src/main.js", import.meta.url), "utf8");
 
-  assert.match(main, /dataUrl\.searchParams\.set\("v", String\(Date\.now\(\)\)\)/);
+  assert.match(main, /const hourlyCacheKey = Math\.floor\(Date\.now\(\) \/ 3_600_000\)/);
+  assert.match(main, /dataUrl\.searchParams\.set\("v", String\(hourlyCacheKey\)\)/);
   assert.match(main, /createDashboardApp\(dashboardData\)\.init\(\)/);
   assert.equal(main.includes("renderBotinas"), false);
   assert.equal(main.includes("TBRetiradas"), false);
@@ -46,6 +47,8 @@ test("grades de sacolas preservam cartões legíveis e responsivos", async () =>
   assert.match(css, /\.season-card\s*\{[^}]*display:\s*flex/s);
   assert.match(css, /\.season-card\s*\{[^}]*flex-direction:\s*column/s);
   assert.match(css, /\.bags-overview-grid\s*>\s*\*[^}]*min-width:\s*0/s);
+  assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.tablewrap td::before/);
+  assert.match(css, /@media \(max-width: 600px\)[\s\S]*\.bags-side-nav[\s\S]*position:\s*fixed/);
 });
 
 test("payload público respeita o modo de dados pessoais configurado", async () => {

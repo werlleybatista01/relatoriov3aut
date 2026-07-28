@@ -22,12 +22,12 @@ export function createComponents({ bagsPerPackage }) {
             : `<b>${formatNumber(row.Qtde_num)}</b>`;
 
         return `<tr>
-        <td>${escapeHtml(row.Data_fmt)}</td>
-        <td>${escapeHtml(row["Nº Retirada"])}</td>
-        <td>${escapeHtml(row.Requisitante)}</td>
-        <td>${escapeHtml(row["Nome do Produto"])}</td>
-        <td>${quantity}</td>
-        <td>${escapeHtml(row.Status)}</td>
+        <td data-label="Data">${escapeHtml(row.Data_fmt)}</td>
+        <td data-label="Nº">${escapeHtml(row["Nº Retirada"])}</td>
+        <td data-label="Requisitante">${escapeHtml(row.Requisitante)}</td>
+        <td data-label="Produto">${escapeHtml(row["Nome do Produto"])}</td>
+        <td data-label="Qtd">${quantity}</td>
+        <td data-label="Status">${escapeHtml(row.Status)}</td>
       </tr>`;
       })
       .join("");

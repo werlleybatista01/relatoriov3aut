@@ -3017,3 +3017,400 @@ select:focus-visible {
 .bags-recommendation.warning p {
   color: #6f4a0b;
 }
+
+/* Hotfix mobile — leitura operacional em telas pequenas. */
+@media (max-width: 600px) {
+  body {
+    background: #f4f9ff;
+  }
+
+  .hero {
+    position: static;
+    padding: 7px 10px;
+    border-bottom-width: 4px;
+  }
+
+  .header {
+    gap: 8px;
+  }
+
+  .brand {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .logo {
+    width: 54px;
+    height: 42px;
+    border-radius: 8px;
+    padding: 3px;
+  }
+
+  h1 {
+    font-size: 18px;
+    line-height: 1.08;
+  }
+
+  .sub {
+    display: none;
+  }
+
+  .datebox {
+    width: 100%;
+    padding: 7px 9px;
+    border-radius: 9px;
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .wrap {
+    padding: 12px 8px 80px;
+  }
+
+  .topbar {
+    gap: 9px;
+    margin-bottom: 10px;
+  }
+
+  .topbar h2 {
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  .topbar p {
+    font-size: 12px;
+  }
+
+  .actions,
+  .actions .btn,
+  .actions button {
+    width: 100%;
+  }
+
+  button,
+  .btn {
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 10px;
+  }
+
+  .grid,
+  .two,
+  .three,
+  .kpis,
+  .prodgrid {
+    gap: 10px;
+  }
+
+  .card {
+    min-height: 0;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .card:after {
+    width: 92px;
+    height: 92px;
+    right: -38px;
+    top: -42px;
+  }
+
+  .icon {
+    margin-bottom: 8px;
+    border-radius: 12px;
+    font-size: 30px;
+  }
+
+  .card h2 {
+    margin-bottom: 6px;
+    font-size: 21px;
+  }
+
+  .chips {
+    margin-top: 12px;
+  }
+
+  .chip {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .panel {
+    margin-bottom: 10px;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(0, 44, 84, 0.08);
+  }
+
+  .kpi {
+    padding: 11px;
+    border-radius: 13px;
+  }
+
+  .kpi b {
+    font-size: 22px;
+  }
+
+  .kpi span {
+    font-size: 12px;
+  }
+
+  .searchbar {
+    gap: 8px;
+  }
+
+  input,
+  select {
+    min-height: 44px;
+    padding: 10px 11px;
+    font-size: 14px;
+  }
+
+  .tablewrap {
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .tablewrap table,
+  .tablewrap thead,
+  .tablewrap tbody,
+  .tablewrap tr,
+  .tablewrap th,
+  .tablewrap td {
+    display: block;
+  }
+
+  .tablewrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .tablewrap tr {
+    margin-bottom: 10px;
+    overflow: hidden;
+    border: 1px solid var(--borda);
+    border-radius: 13px;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(0, 44, 84, 0.07);
+  }
+
+  .tablewrap td {
+    display: grid;
+    grid-template-columns: minmax(92px, 36%) minmax(0, 1fr);
+    gap: 9px;
+    padding: 9px 11px;
+    border-bottom: 1px solid #edf2f7;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .tablewrap td:last-child {
+    border-bottom: 0;
+  }
+
+  .tablewrap td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-weight: 900;
+  }
+
+  .barrow {
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+  }
+
+  .barrow .bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  #sacolas {
+    width: auto;
+  }
+
+  #sacolas > .topbar {
+    display: none;
+  }
+
+  .bags-shell {
+    gap: 9px;
+    padding-bottom: 74px;
+  }
+
+  .bags-side-nav {
+    position: fixed;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    top: auto;
+    z-index: 25;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+    padding: 7px;
+    border-radius: 16px;
+    box-shadow: 0 14px 28px rgba(10, 35, 65, 0.18);
+  }
+
+  .bags-side-nav nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
+    overflow: visible;
+  }
+
+  .bags-nav-button {
+    min-width: 0;
+    min-height: 44px;
+    padding: 4px;
+    border-radius: 11px;
+  }
+
+  .bags-nav-button.back {
+    grid-column: auto;
+    grid-row: auto;
+    width: 44px;
+  }
+
+  .bags-nav-label {
+    display: none;
+  }
+
+  .bags-nav-icon {
+    font-size: 18px;
+  }
+
+  .bags-content {
+    min-width: 0;
+  }
+
+  .bags-view-header {
+    margin-bottom: 9px;
+  }
+
+  .bags-view-header h2 {
+    font-size: 22px;
+    line-height: 1.08;
+  }
+
+  .bags-view-header p {
+    font-size: 12px;
+  }
+
+  .bags-mode-badge {
+    min-height: 28px;
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+
+  .bags-executive-kpis,
+  .bags-overview-sidebar,
+  .bags-overview-grid,
+  .bags-monthly-summary,
+  .bags-stock-view-grid,
+  .bags-section-grid.two-col,
+  .bags-filterbar.compact,
+  .bags-filterbar {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+
+  .bags-kpi-card,
+  .bags-overview-stock-card,
+  .bags-overview-insights-card,
+  .bags-overview-decision,
+  .bags-monthly-average-card,
+  .bags-monthly-ranking-card,
+  .bags-chart-panel,
+  .bags-recommendation,
+  .bags-simulator {
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(23, 57, 92, 0.07);
+  }
+
+  .bags-kpi-card {
+    min-height: 0;
+  }
+
+  .bags-kpi-card b,
+  .bags-overview-stock-value b,
+  .bags-monthly-average-card > b {
+    font-size: 25px;
+  }
+
+  .bags-panel-heading {
+    gap: 8px;
+  }
+
+  .bags-panel-heading h3 {
+    font-size: 16px;
+  }
+
+  .bags-panel-heading p,
+  .bags-panel-heading > span {
+    font-size: 11px;
+  }
+
+  .bags-overview-stock-value {
+    grid-template-columns: 44px 1fr;
+    margin: 11px 0;
+  }
+
+  .bags-overview-stock-value > i {
+    width: 42px;
+    height: 42px;
+    border-radius: 13px;
+    font-size: 19px;
+  }
+
+  .bags-overview-stock-metrics,
+  .bags-collaborator-summary,
+  .bags-comparison-kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .bags-line-chart {
+    overflow-x: auto;
+  }
+
+  .bags-line-chart svg {
+    min-width: 560px;
+  }
+
+  .bags-month-ranking {
+    max-height: 220px;
+  }
+
+  .bags-report-actions article {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .bags-report-actions article i {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 380px) {
+  .bags-overview-stock-metrics,
+  .bags-collaborator-summary,
+  .bags-comparison-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .tablewrap td {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+}

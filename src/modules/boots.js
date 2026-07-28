@@ -282,7 +282,7 @@ export function createBootsModule({
     let rows = stats
       .map(
         (s) =>
-          `<tr data-action="boots-item" data-key="${encodeURIComponent(s.k)}" style="cursor:pointer"><td><b>${esc(s.modelo)}</b></td><td>${esc(s.tam)}</td><td>${fmt(s.estoque)}</td><td>${fmt(s.q)}</td><td>${fmt(s.media)}</td><td>${s.media ? fmt(s.cobertura) + " mês(es)" : "Sem consumo"}</td><td><span class="recommend-badge ${s.cls === "danger" ? "danger" : s.cls === "warn" ? "warn" : ""}">${s.status}</span></td></tr>`
+          `<tr data-action="boots-item" data-key="${encodeURIComponent(s.k)}" style="cursor:pointer"><td data-label="Modelo"><b>${esc(s.modelo)}</b></td><td data-label="Tamanho">${esc(s.tam)}</td><td data-label="Estoque">${fmt(s.estoque)}</td><td data-label="Saídas ${operatingYear}">${fmt(s.q)}</td><td data-label="Média/mês">${fmt(s.media)}</td><td data-label="Cobertura">${s.media ? fmt(s.cobertura) + " mês(es)" : "Sem consumo"}</td><td data-label="Status"><span class="recommend-badge ${s.cls === "danger" ? "danger" : s.cls === "warn" ? "warn" : ""}">${s.status}</span></td></tr>`
       )
       .join("");
     return `<div class="tablewrap"><table><thead><tr><th>Modelo</th><th>Tamanho</th><th>Estoque</th><th>Saídas ${operatingYear}</th><th>Média/mês</th><th>Cobertura</th><th>Status</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Sem dados no filtro.</td></tr>'}</tbody></table></div>`;
@@ -326,7 +326,7 @@ export function createBootsModule({
         .slice(0, 25)
         .map(
           (r) =>
-            `<tr role="button" tabindex="0" data-action="boots-person" data-value="${encodeURIComponent(r.k)}" style="cursor:pointer"><td><b>${esc(r.k)}</b></td><td>${fmt(r.q)}</td><td>${esc(r.principal)}</td><td>${r.mediaTroca ? fmt(r.mediaTroca) + " dias" : "—"}</td></tr>`
+            `<tr role="button" tabindex="0" data-action="boots-person" data-value="${encodeURIComponent(r.k)}" style="cursor:pointer"><td data-label="Colaborador"><b>${esc(r.k)}</b></td><td data-label="Qtd">${fmt(r.q)}</td><td data-label="Item principal">${esc(r.principal)}</td><td data-label="Média entre retiradas">${r.mediaTroca ? fmt(r.mediaTroca) + " dias" : "—"}</td></tr>`
         )
         .join(
           ""

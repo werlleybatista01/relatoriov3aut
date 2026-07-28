@@ -6,7 +6,8 @@ import { createDashboardApp } from "./app.js";
  */
 async function initializeDashboard() {
   const dataUrl = new URL("../data/dashboard-data.js", import.meta.url);
-  dataUrl.searchParams.set("v", String(Date.now()));
+  const hourlyCacheKey = Math.floor(Date.now() / 3_600_000);
+  dataUrl.searchParams.set("v", String(hourlyCacheKey));
   const { dashboardData } = await import(dataUrl.href);
   createDashboardApp(dashboardData).init();
 }

@@ -174,7 +174,7 @@ export function createToolsModule({
     let rows = arr
       .map(
         (r) =>
-          `<tr><td>${esc(r.Produto)}</td><td><b>${fmt(r.QuantidadeEmAberto)}</b></td><td>${esc(r.DataRetirada)}</td><td>${esc(r.PrazoDevolucao)}</td><td>${fmt(r.DiasFora)} dias</td><td>${statusFerramentaBadge(r.StatusClasse, r.StatusTexto)}</td><td>${esc(r.NumeroRetirada)}</td></tr>`
+          `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${statusFerramentaBadge(r.StatusClasse, r.StatusTexto)}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td></tr>`
       )
       .join("");
     return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
