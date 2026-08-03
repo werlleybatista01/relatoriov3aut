@@ -359,11 +359,34 @@ export function createToolsModule({
     return openTools.find((row) => retiradaKey(row) === key);
   }
 
+  async function postarRegraN8n(body) {
+    try {
+      const response = await window.fetch(WEBHOOK_REGRAS_COBRANCA, {
+        method: "POST",
+        body
+      });
+      if (response.ok) return;
+      throw new Error("HTTP " + response.status);
+    } catch (error) {
+      if (
+        error instanceof TypeError ||
+        String(error.message || "").includes("Failed to fetch")
+      ) {
+        await window.fetch(WEBHOOK_REGRAS_COBRANCA, {
+          method: "POST",
+          mode: "no-cors",
+          body
+        });
+        return;
+      }
+      throw error;
+    }
+  }
+
   async function enviarRegraN8n(row, payload) {
     if (!window.fetch) return;
-    await window.fetch(WEBHOOK_REGRAS_COBRANCA, {
-      method: "POST",
-      body: new URLSearchParams(
+    await postarRegraN8n(
+      new URLSearchParams(
         Object.entries({
           numero_retirada: row.NumeroRetirada,
           codigo: row.NumeroRetirada,
@@ -373,7 +396,7 @@ export function createToolsModule({
           ...payload
         }).map(([key, value]) => [key, String(value ?? "")])
       )
-    });
+    );
   }
 
   function atualizarModalAberto() {
@@ -392,6 +415,7 @@ export function createToolsModule({
     if (acao === "prorrogar") {
       payload.dias = Number(dias || 7);
       payload.prorrogado_ate = somarDiasISO(payload.dias);
+      payload.data_movimentacao = payload.prorrogado_ate;
       regras[key] = { acao, prorrogadoAte: payload.prorrogado_ate };
     } else if (acao === "nao_cobrar") {
       regras[key] = { acao };
