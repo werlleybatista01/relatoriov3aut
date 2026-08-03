@@ -126,6 +126,15 @@ export function createDashboardApp(payload, documentRef = document) {
       case "tools-view-person":
         tools.viewPerson(element.dataset.code);
         break;
+      case "tools-extend":
+        tools.extend(element.dataset.code, element.dataset.days);
+        break;
+      case "tools-no-charge":
+        tools.noCharge(element.dataset.code);
+        break;
+      case "tools-charge":
+        tools.charge(element.dataset.code);
+        break;
       case "tools-clear":
         tools.clear();
         break;
