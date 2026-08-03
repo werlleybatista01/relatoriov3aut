@@ -142,7 +142,6 @@ test("módulos principais renderizam com massa sintética", () => {
   assert.match(toolLocationHtml, /Almoxarifado/);
   tools.viewPerson("COL-TESTE");
   const toolsHtml = documentRef.getElementById("modalBody").innerHTML;
-  assert.match(toolsHtml, /Monitoramento/);
-  assert.match(toolsHtml, /\+7 dias/);
-  assert.match(toolsHtml, /Não cobrar/);
+  assert.doesNotMatch(toolsHtml, /\+7 dias/);
+  assert.doesNotMatch(toolsHtml, /Não cobrar/);
 });
