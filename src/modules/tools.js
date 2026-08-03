@@ -363,15 +363,16 @@ export function createToolsModule({
     if (!window.fetch) return;
     await window.fetch(WEBHOOK_REGRAS_COBRANCA, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        numero_retirada: row.NumeroRetirada,
-        codigo: row.NumeroRetirada,
-        colaborador: row.Colaborador,
-        telefone: row.TelefoneWhatsApp,
-        produto: row.Produto,
-        ...payload
-      })
+      body: new URLSearchParams(
+        Object.entries({
+          numero_retirada: row.NumeroRetirada,
+          codigo: row.NumeroRetirada,
+          colaborador: row.Colaborador,
+          telefone: row.TelefoneWhatsApp,
+          produto: row.Produto,
+          ...payload
+        }).map(([key, value]) => [key, String(value ?? "")])
+      )
     });
   }
 
