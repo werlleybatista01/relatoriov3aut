@@ -137,6 +137,32 @@ class PayloadTests(unittest.TestCase):
         self.assertEqual(stock[0]["CodigoProduto"], "100")
         self.assertEqual(stock[0]["QtdeEstoque"], 2)
 
+    def test_definitive_withdrawal_is_not_charged_as_open_tool(self):
+        withdrawals = [
+            {
+                "NumeroRetirada": "2026009999",
+                "CodigoProduto": "300",
+                "CodigoCliente": "10",
+                "NomeProduto": "FURADEIRA BOSCH",
+                "NomeCliente": "ORALDO TESTE",
+                "QtdeRetirada": 1,
+                "DataRetirada": "01/08/2026",
+                "DataDevolucao": "02/08/2026",
+                "Observacao": "SAÍDA DEFINITIVA",
+            }
+        ]
+        open_tools, diagnostics = atualizar_dashboard.legacy.normalize_open_tools(
+            withdrawals,
+            returns=[],
+            exclusions=[],
+            clients=[],
+            stock_rows=[],
+            tool_classifications={"300": "devolvivel"},
+        )
+
+        self.assertEqual(open_tools, [])
+        self.assertEqual(diagnostics["definitive_withdrawal_groups"], 1)
+
     def test_homologation_blocks_git_push(self):
         with self.assertRaises(RuntimeError):
             atualizar_dashboard.validate_security_profile(
