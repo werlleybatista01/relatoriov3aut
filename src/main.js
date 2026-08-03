@@ -1,4 +1,4 @@
-import { createDashboardApp } from "./app.js?v=20260803-monitoramento-fix1";
+import { createDashboardApp } from "./app.js?v=20260803-monitoramento-original2";
 
 /**
  * Ponto de entrada da aplicação.
