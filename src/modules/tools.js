@@ -347,7 +347,7 @@ export function createToolsModule({
   }
   function renderFerramentas() {
     documentRef.getElementById("genericTitle").textContent =
-      "Monitoramento de devoluções";
+      "Monitoramento";
     documentRef.getElementById("genericSub").textContent =
       "Controle os prazos, pause cobranças e prorrogue devoluções antes da automação enviar mensagens.";
     documentRef.getElementById("genericContent").innerHTML =
