@@ -383,6 +383,34 @@ def infer_tool_classification(product: Any) -> Tuple[str, str]:
     return "nao_classificado", "revisao_manual"
 
 
+def is_definitive_withdrawal(row: Dict[str, Any]) -> bool:
+    """Identifica saídas definitivas/permanentes por texto do movimento.
+
+    A classificação por produto diz se o item normalmente é devolvível. Esta
+    regra trata a exceção da retirada: quando a própria saída foi lançada como
+    definitiva, ela não deve entrar na régua de cobrança/devolução.
+    """
+    fields = [
+        row.get("Observacao"),
+        row.get("Observação"),
+        row.get("StatusDevolucao"),
+        row.get("Status Devolucao"),
+        row.get("Status Devolução"),
+        row.get("TipoMovimento"),
+        row.get("Tipo Movimento"),
+        row.get("Movimento"),
+    ]
+    text = norm(" ".join(safe_text(value) for value in fields))
+    if not text:
+        return False
+    return bool(
+        re.search(
+            r"\b(saida definitiva|uso definitivo|uso permanente|permanente)\b",
+            text,
+        )
+    )
+
+
 def load_tool_classification_registry() -> Dict[str, Any]:
     if not TOOL_CLASSIFICATION_PATH.exists():
         return {
@@ -904,6 +932,8 @@ def normalize_open_tools(
         "devolvable_quantity": 0.0,
         "permanent_groups": 0,
         "permanent_quantity": 0.0,
+        "definitive_withdrawal_groups": 0,
+        "definitive_withdrawal_quantity": 0.0,
         "consumption_groups": 0,
         "consumption_quantity": 0.0,
         "ignored_groups": 0,
@@ -1014,6 +1044,11 @@ def normalize_open_tools(
 
         rows = group["rows"]
         row = rows[0]
+
+        if any(is_definitive_withdrawal(source) for source in rows):
+            diagnostics["definitive_withdrawal_groups"] += 1
+            diagnostics["definitive_withdrawal_quantity"] += balance
+            continue
 
         product_code = normalize_code(row.get("CodigoProduto"))
         client_code = normalize_code(row.get("CodigoCliente"))
@@ -2199,35 +2234,6 @@ def validate_regression(
         )
 
 
-
-def validate_live_data_regression(
-    state: Dict[str, Any],
-    last_data_date: str,
-    record_count: int,
-) -> None:
-    """Preserva protecoes de dados sem usar a data nominal de um backup."""
-    previous_data_date = parse_iso_date(state.get("last_data_date"))
-    current_data_date = parse_iso_date(last_data_date)
-    if previous_data_date and current_data_date and current_data_date < previous_data_date and not ALLOW_BACKUP_REGRESSION:
-        raise RuntimeError(
-            "REGRESSAO BLOQUEADA: a ultima movimentacao do banco principal e "
-            f"{current_data_date:%d/%m/%Y}, mas o dashboard ja havia processado "
-            f"movimentacoes ate {previous_data_date:%d/%m/%Y}."
-        )
-    try:
-        previous_count = int(state.get("records") or state.get("record_count") or 0)
-    except Exception:
-        previous_count = 0
-    if previous_count > 0 and record_count < previous_count:
-        drop = (previous_count - record_count) / previous_count * 100
-        if drop > MAX_RECORD_DROP_PERCENT and not ALLOW_RECORD_DROP:
-            raise RuntimeError(
-                "QUEDA DE DADOS BLOQUEADA: os registros cairam de "
-                f"{previous_count} para {record_count} ({drop:.1f}%)."
-            )
-        log(f"AVISO: a quantidade de registros caiu de {previous_count} para {record_count} ({drop:.1f}%).")
-
-
 def run_git(
     args: List[str],
     *,
@@ -2238,9 +2244,6 @@ def run_git(
         cwd=REPO_DIR,
         text=True,
         capture_output=True,
-        creationflags=(
-            subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-        ),
     )
     if check and result.returncode != 0:
         detail = (result.stdout + "\n" + result.stderr).strip()
