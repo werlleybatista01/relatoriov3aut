@@ -59,6 +59,22 @@ export function createToolsModule({
     ).includes("rastelo");
   }
 
+  function isSaidaDefinitiva(row) {
+    const text = normalizarPesquisaFerramentas(
+      [
+        row.Observacao,
+        row["Observação"],
+        row.StatusDevolucao,
+        row["Status Devolucao"],
+        row["Status Devolução"],
+        row.TipoMovimento,
+        row["Tipo Movimento"],
+        row.Movimento
+      ].join(" ")
+    );
+    return /\b(saida definitiva|uso definitivo|uso permanente|permanente)\b/.test(text);
+  }
+
   function hojeISO() {
     return new Date().toISOString().slice(0, 10);
   }
@@ -70,6 +86,10 @@ export function createToolsModule({
   }
 
   function regraOperacional(row) {
+    if (isSaidaDefinitiva(row)) {
+      return { bloqueiaCobranca: true, status: "Saida definitiva", detalhe: "Sem cobrança automática" };
+    }
+
     if (isRastelo(row)) {
       return { bloqueiaCobranca: true, status: "Uso continuo", detalhe: "Rastelo sem cobrança automática" };
     }
@@ -102,8 +122,9 @@ export function createToolsModule({
   }
   function ferramentasAbertasFiltradas() {
     let termo = normalizarPesquisaFerramentas(ferramentasBusca);
-    if (!termo) return openTools;
-    return openTools.filter((r) =>
+    const rows = openTools.filter((r) => !isSaidaDefinitiva(r));
+    if (!termo) return rows;
+    return rows.filter((r) =>
       normalizarPesquisaFerramentas(
         (r.Colaborador || "") + " " + (r.Produto || "")
       ).includes(termo)
