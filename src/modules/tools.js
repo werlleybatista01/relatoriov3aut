@@ -17,7 +17,57 @@ export function createToolsModule({
   const esc = escapeHtml;
   const fmt = formatNumber;
   const n = toNumber;
+  const storageKey = "almoxarifado:ferramentas:cobranca:v1";
+  const itensSemCobrancaAutomatica = ["rastelo"];
   let ferramentasBusca = "";
+  let controlesCobranca = carregarControlesCobranca();
+
+  function janela() {
+    return documentRef.defaultView || globalThis.window || {};
+  }
+
+  function hojeISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function somarDiasISO(dias) {
+    const data = new Date();
+    data.setDate(data.getDate() + Number(dias || 0));
+    return data.toISOString().slice(0, 10);
+  }
+
+  function formatarDataISO(iso) {
+    if (!iso) return "";
+    const [ano, mes, dia] = String(iso).split("-");
+    return ano && mes && dia ? `${dia}/${mes}/${ano}` : iso;
+  }
+
+  function chaveFerramenta(row) {
+    return [
+      row.NumeroRetirada || "",
+      row.CodigoProduto || "",
+      row.CodigoCliente || "",
+      row.Produto || ""
+    ].join("|");
+  }
+
+  function carregarControlesCobranca() {
+    try {
+      const storage = janela().localStorage;
+      return storage ? JSON.parse(storage.getItem(storageKey) || "{}") : {};
+    } catch (_error) {
+      return {};
+    }
+  }
+
+  function salvarControlesCobranca() {
+    try {
+      const storage = janela().localStorage;
+      if (storage) storage.setItem(storageKey, JSON.stringify(controlesCobranca));
+    } catch (_error) {
+      // O dashboard continua funcionando mesmo se o navegador bloquear storage.
+    }
+  }
 
   function normalizarPesquisaFerramentas(txt) {
     return String(txt || "")
@@ -26,6 +76,42 @@ export function createToolsModule({
       .toLowerCase()
       .replace(/\s+/g, " ")
       .trim();
+  }
+  function ehItemSemCobrancaAutomatica(row) {
+    const texto = normalizarPesquisaFerramentas(
+      [row.Produto, row.CategoriaEstoque].join(" ")
+    );
+    return itensSemCobrancaAutomatica.some((item) => texto.includes(item));
+  }
+  function controleFerramenta(row) {
+    return controlesCobranca[chaveFerramenta(row)] || {};
+  }
+  function cobrancaPausada(row) {
+    const controle = controleFerramenta(row);
+    if (controle.naoCobrar) return true;
+    if (controle.prorrogadoAte && controle.prorrogadoAte >= hojeISO()) return true;
+    return ehItemSemCobrancaAutomatica(row);
+  }
+  function deveCobrarFerramenta(row) {
+    return !cobrancaPausada(row);
+  }
+  function statusCobrancaFerramenta(row) {
+    const controle = controleFerramenta(row);
+    if (controle.naoCobrar) {
+      return statusFerramentaBadge("ok", "Sem cobrança");
+    }
+    if (controle.prorrogadoAte && controle.prorrogadoAte >= hojeISO()) {
+      return statusFerramentaBadge("warn", `Prorrogado até ${formatarDataISO(controle.prorrogadoAte)}`);
+    }
+    if (ehItemSemCobrancaAutomatica(row)) {
+      return statusFerramentaBadge("ok", "Uso contínuo");
+    }
+    return statusFerramentaBadge(row.StatusClasse, row.StatusTexto);
+  }
+  function controlesLinhaFerramenta(row) {
+    const code = encodeURIComponent(chaveFerramenta(row));
+    const pausada = cobrancaPausada(row);
+    return `<div class="tool-actions"><button class="btn ghost" type="button" data-action="tools-extend" data-code="${code}" data-days="7">+7 dias</button><button class="btn ghost" type="button" data-action="tools-extend" data-code="${code}" data-days="15">+15 dias</button>${pausada ? `<button class="btn yellow" type="button" data-action="tools-charge" data-code="${code}">Voltar a cobrar</button>` : `<button class="btn yellow" type="button" data-action="tools-no-charge" data-code="${code}">Não cobrar</button>`}</div>`;
   }
   function ferramentasAbertasFiltradas() {
     let termo = normalizarPesquisaFerramentas(ferramentasBusca);
@@ -150,10 +236,10 @@ export function createToolsModule({
       let p = m[k];
       p.itens.push(r);
       p.qtd += n(r.QuantidadeEmAberto);
-      if (r.StatusClasse === "danger") {
+      if (r.StatusClasse === "danger" && deveCobrarFerramenta(r)) {
         p.atrasados += n(r.QuantidadeEmAberto);
         p.pior = "danger";
-      } else if (r.StatusClasse === "warn" && p.pior !== "danger") p.pior = "warn";
+      } else if (r.StatusClasse === "warn" && deveCobrarFerramenta(r) && p.pior !== "danger") p.pior = "warn";
       if (!p.maisAntigaISO || String(r.DataRetiradaISO || "") < p.maisAntigaISO) {
         p.maisAntigaISO = r.DataRetiradaISO || "";
         p.maisAntiga = r.DataRetirada || "";
@@ -174,10 +260,10 @@ export function createToolsModule({
     let rows = arr
       .map(
         (r) =>
-          `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${statusFerramentaBadge(r.StatusClasse, r.StatusTexto)}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td></tr>`
+          `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${statusCobrancaFerramenta(r)}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td><td data-label="Cobrança">${controlesLinhaFerramenta(r)}</td></tr>`
       )
       .join("");
-    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
+    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th><th>Cobrança</th></tr></thead><tbody>${rows || '<tr><td colspan="8">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
   }
   function abrirItensPessoaFerramentas(codigoEnc) {
     let codigo = decodeURIComponent(codigoEnc),
@@ -185,7 +271,9 @@ export function createToolsModule({
         (x) => String(x.codigo) === codigo
       );
     if (!p) return;
-    let atrasados = p.itens.filter((r) => r.StatusClasse === "danger");
+    let atrasados = p.itens.filter(
+      (r) => r.StatusClasse === "danger" && deveCobrarFerramenta(r)
+    );
     modal.open(
       "Ferramentas com " + p.nome,
       `${fmt(p.qtd)} item(ns) em aberto · ${fmt(atrasados.reduce((a, r) => a + n(r.QuantidadeEmAberto), 0))} atrasado(s)`,
@@ -193,7 +281,9 @@ export function createToolsModule({
     );
   }
   function mensagemWhatsAppFerramentas(p) {
-    let atrasados = p.itens.filter((r) => r.StatusClasse === "danger");
+    let atrasados = p.itens.filter(
+      (r) => r.StatusClasse === "danger" && deveCobrarFerramenta(r)
+    );
     let linhas = atrasados
       .slice(0, 8)
       .map(
@@ -239,13 +329,13 @@ export function createToolsModule({
     if (!box) return;
     let total = arr.reduce((a, r) => a + n(r.QuantidadeEmAberto), 0),
       atrasados = arr
-        .filter((r) => r.StatusClasse === "danger")
+        .filter((r) => r.StatusClasse === "danger" && deveCobrarFerramenta(r))
         .reduce((a, r) => a + n(r.QuantidadeEmAberto), 0),
       semTelefone = pessoas.filter((p) => p.atrasados > 0 && !p.telefone).length,
       integracao = whatsapp.enabled
         ? `<div class="kpi"><span>Sem telefone</span><br><b>${fmt(semTelefone)}</b></div>`
         : `<div class="kpi kpi-contact"><span>Contato</span><b class="integration-name">n8n</b><small class="integration-status">WhatsApp direto desativado</small></div>`;
-    box.innerHTML = `<div class="panel"><p class="leitura">Mostrando somente itens que continuam com colaboradores. O sistema soma as linhas da mesma retirada, desconta devoluções e cancelamentos e exibe apenas o saldo restante.</p><div class="kpis"><div class="kpi"><span>Pessoas com itens</span><br><b>${fmt(pessoas.length)}</b></div><div class="kpi"><span>Itens em aberto</span><br><b>${fmt(total)}</b></div><div class="kpi"><span>Itens atrasados</span><br><b>${fmt(atrasados)}</b></div>${integracao}</div></div>${pessoas.length ? pessoas.map(cartaoPessoaFerramentas).join("") : `<div class="panel"><h2>Nenhum item encontrado</h2><p class="muted">Não há saldo em aberto para a pesquisa informada.</p></div>`}`;
+    box.innerHTML = `<div class="panel"><p class="leitura">Mostrando itens que continuam com colaboradores. Rastelos ficam como uso contínuo e não entram na cobrança automática. Use +7/+15 dias ou Não cobrar dentro de “Ver itens” para pausar cobranças sem apagar o histórico.</p><div class="kpis"><div class="kpi"><span>Pessoas com itens</span><br><b>${fmt(pessoas.length)}</b></div><div class="kpi"><span>Itens em aberto</span><br><b>${fmt(total)}</b></div><div class="kpi"><span>Itens para cobrar</span><br><b>${fmt(atrasados)}</b></div>${integracao}</div></div>${pessoas.length ? pessoas.map(cartaoPessoaFerramentas).join("") : `<div class="panel"><h2>Nenhum item encontrado</h2><p class="muted">Não há saldo em aberto para a pesquisa informada.</p></div>`}`;
   }
   function limparPesquisaFerramentas() {
     ferramentasBusca = "";
@@ -265,6 +355,39 @@ export function createToolsModule({
       `<div class="panel"><h2>Pesquisar colaborador ou ferramenta</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento. Itens devolvidos, ferramentas fixas e materiais de consumo não aparecem.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
     atualizarPesquisaFerramentas();
   }
+  function atualizarModalPessoaPorItemKey(itemKey) {
+    const item = openTools.find((row) => chaveFerramenta(row) === itemKey);
+    if (item) abrirItensPessoaFerramentas(encodeURIComponent(item.CodigoCliente || item.Colaborador || "Não informado"));
+  }
+  function prorrogarFerramenta(itemKeyEnc, dias) {
+    const itemKey = decodeURIComponent(itemKeyEnc);
+    controlesCobranca[itemKey] = {
+      ...controlesCobranca[itemKey],
+      naoCobrar: false,
+      prorrogadoAte: somarDiasISO(dias)
+    };
+    salvarControlesCobranca();
+    atualizarPesquisaFerramentas();
+    atualizarModalPessoaPorItemKey(itemKey);
+  }
+  function naoCobrarFerramenta(itemKeyEnc) {
+    const itemKey = decodeURIComponent(itemKeyEnc);
+    controlesCobranca[itemKey] = {
+      ...controlesCobranca[itemKey],
+      naoCobrar: true,
+      prorrogadoAte: ""
+    };
+    salvarControlesCobranca();
+    atualizarPesquisaFerramentas();
+    atualizarModalPessoaPorItemKey(itemKey);
+  }
+  function voltarCobrarFerramenta(itemKeyEnc) {
+    const itemKey = decodeURIComponent(itemKeyEnc);
+    delete controlesCobranca[itemKey];
+    salvarControlesCobranca();
+    atualizarPesquisaFerramentas();
+    atualizarModalPessoaPorItemKey(itemKey);
+  }
 
   function getHomeMetrics() {
     const people = agruparFerramentasPorPessoa(openTools);
@@ -283,6 +406,9 @@ export function createToolsModule({
     clear: limparPesquisaFerramentas,
     viewPerson: abrirItensPessoaFerramentas,
     openWhatsApp: abrirWhatsAppFerramentas,
+    extend: prorrogarFerramenta,
+    noCharge: naoCobrarFerramenta,
+    charge: voltarCobrarFerramenta,
     getHomeMetrics
   });
 }
