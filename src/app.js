@@ -9,7 +9,7 @@ import { createToolsModule } from "./modules/tools.js?v=20260803-monitoramento-r
 import { createBootsModule } from "./modules/boots.js";
 import { createBagsModule } from "./modules/bags.js";
 import { createGenericModule } from "./modules/generic.js";
-import { createHomeModule } from "./modules/home.js";
+import { createHomeModule } from "./modules/home.js?v=20260803-monitoramento-original2";
 
 /**
  * Compõe os módulos da aplicação.
@@ -107,6 +107,9 @@ export function createDashboardApp(payload, documentRef = document) {
     switch (action) {
       case "open-category":
         openCategory(element.dataset.category);
+        break;
+      case "open-monitoring":
+        documentRef.defaultView.location.assign("monitoramento.html");
         break;
       case "navigate-home":
         navigation.showSection("home");
