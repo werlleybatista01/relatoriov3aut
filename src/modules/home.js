@@ -23,9 +23,9 @@ export function createHomeModule({ selectors, tools, documentRef = document }) {
           <div class="card" role="button" tabindex="0"
                data-action="open-category" data-category="Ferramentas">
             <span class="icon">${icon}</span>
-            <h2>Monitoramento</h2>
+            <h2>Ferramentas</h2>
             <p class="muted">
-              Devoluções, prazos e cobranças de equipamentos em aberto.
+              Equipamentos devolvíveis que continuam com colaboradores.
             </p>
             <div class="chips">
               <span class="chip">${formatNumber(toolMetrics.quantity)} itens em aberto</span>
@@ -56,7 +56,14 @@ export function createHomeModule({ selectors, tools, documentRef = document }) {
           </div>
         </div>
       `;
-    }).join("");
+    }).join("") + `
+      <div class="card" role="button" tabindex="0"
+           data-action="open-monitoring">
+        <span class="icon">📊</span>
+        <h2>Monitoramento</h2>
+        <p class="muted">Integração, WhatsApp e devoluções</p>
+      </div>
+    `;
   }
 
   return Object.freeze({ render });
