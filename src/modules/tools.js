@@ -1,80 +1,62 @@
 import { escapeHtml, formatNumber, toNumber } from "../core/formatters.js";
 
-const STORAGE_KEY_COBRANCA_FERRAMENTAS = "almoxarifado:ferramentas:cobranca:v1";
-const ITENS_SEM_COBRANCA_AUTOMATICA = ["rastelo"];
-const WEBHOOK_REGRAS_COBRANCA =
-  "https://mcp-n8n.gtcqed.easypanel.host/webhook/f32d8ef1-1867-45ea-8304-422587fe3087/almoxarifado/excecoes-notificacao";
-
 /**
  * Módulo de equipamentos devolvíveis.
  *
  * A classificação e o cálculo do saldo são realizados no Python.
  * Este módulo apenas filtra, agrupa e apresenta os saldos já consolidados.
  */
-export function normalizarPesquisaFerramentas(txt) {
-  return String(txt || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-export function chaveFerramenta(row) {
-  return [
-    row.NumeroRetirada || "",
-    row.CodigoProduto || "",
-    row.CodigoCliente || "",
-    row.Produto || ""
-  ].join("|");
-}
-
-export function ehItemSemCobrancaAutomatica(row) {
-  const texto = normalizarPesquisaFerramentas(
-    [row.Produto, row.CategoriaEstoque].join(" ")
-  );
-  return ITENS_SEM_COBRANCA_AUTOMATICA.some((item) => texto.includes(item));
-}
-
-export function deveCobrarFerramenta(row, controlesCobranca = {}, referenceDateISO = "") {
-  const controle = controlesCobranca[chaveFerramenta(row)] || {};
-  const hoje = referenceDateISO || new Date().toISOString().slice(0, 10);
-
-  if (controle.naoCobrar) return false;
-  if (controle.prorrogadoAte && controle.prorrogadoAte >= hoje) return false;
-  if (ehItemSemCobrancaAutomatica(row)) return false;
-
-  return true;
-}
-
-export function montarPlanoCobrancaFerramentas({
-  openTools,
-  controlesCobranca = {},
-  referenceDateISO = "",
-  onlyOverdue = true
-}) {
-  return openTools.filter((row) => {
-    if (onlyOverdue && row.StatusClasse !== "danger") return false;
-    return deveCobrarFerramenta(row, controlesCobranca, referenceDateISO);
-  });
-}
-
 export function createToolsModule({
   selectors,
   modal,
   whatsapp,
   documentRef = document
 }) {
+  const WEBHOOK_REGRAS_COBRANCA =
+    "https://mcp-n8n.gtcqed.easypanel.host/webhook/f32d8ef1-1867-45ea-8304-422587fe3087/almoxarifado/excecoes-notificacao";
   const openTools = selectors.openTools;
   const stock = selectors.stock;
   const esc = escapeHtml;
   const fmt = formatNumber;
   const n = toNumber;
   let ferramentasBusca = "";
-  let controlesCobranca = carregarControlesCobranca();
+  let ultimaPessoaAberta = "";
 
-  function janela() {
-    return documentRef.defaultView || globalThis.window || {};
+  function retiradaKey(row) {
+    return [
+      row.NumeroRetirada,
+      row.CodigoProduto,
+      row.CodigoCliente,
+      row.DataRetiradaISO
+    ]
+      .map((value) => String(value || "").trim())
+      .join("|");
+  }
+
+  function lerRegrasLocais() {
+    try {
+      return JSON.parse(window.localStorage.getItem("almoxarifadoRegrasCobranca") || "{}");
+    } catch (_error) {
+      return {};
+    }
+  }
+
+  function salvarRegrasLocais(regras) {
+    try {
+      window.localStorage.setItem("almoxarifadoRegrasCobranca", JSON.stringify(regras));
+    } catch (_error) {
+      // O controle local é auxiliar. A regra principal é enviada ao n8n.
+    }
+  }
+
+  function regraLocal(row) {
+    return lerRegrasLocais()[retiradaKey(row)] || null;
+  }
+
+  function isRastelo(row) {
+    return normalizarPesquisaFerramentas(
+      [row.Produto, row.CategoriaEstoque].join(" ")
+    ).includes("rastelo");
   }
 
   function hojeISO() {
@@ -87,73 +69,36 @@ export function createToolsModule({
     return data.toISOString().slice(0, 10);
   }
 
-  function formatarDataISO(iso) {
-    if (!iso) return "";
-    const [ano, mes, dia] = String(iso).split("-");
-    return ano && mes && dia ? `${dia}/${mes}/${ano}` : iso;
+  function regraOperacional(row) {
+    if (isRastelo(row)) {
+      return { bloqueiaCobranca: true, status: "Uso continuo", detalhe: "Rastelo sem cobrança automática" };
+    }
+
+    const regra = regraLocal(row);
+    if (!regra) return { bloqueiaCobranca: false, status: "", detalhe: "" };
+
+    if (regra.acao === "nao_cobrar") {
+      return { bloqueiaCobranca: true, status: "Nao cobrar", detalhe: "Cobrança pausada manualmente" };
+    }
+
+    if (regra.acao === "prorrogar" && regra.prorrogadoAte >= hojeISO()) {
+      return {
+        bloqueiaCobranca: true,
+        status: "Prorrogado",
+        detalhe: `Prorrogado ate ${regra.prorrogadoAte}`
+      };
+    }
+
+    return { bloqueiaCobranca: false, status: "", detalhe: "" };
   }
 
-  function carregarControlesCobranca() {
-    try {
-      const storage = janela().localStorage;
-      return storage ? JSON.parse(storage.getItem(STORAGE_KEY_COBRANCA_FERRAMENTAS) || "{}") : {};
-    } catch (_error) {
-      return {};
-    }
-  }
-
-  function salvarControlesCobranca() {
-    try {
-      const storage = janela().localStorage;
-      if (storage) storage.setItem(STORAGE_KEY_COBRANCA_FERRAMENTAS, JSON.stringify(controlesCobranca));
-    } catch (_error) {
-      // O dashboard continua funcionando mesmo se o navegador bloquear storage.
-    }
-  }
-
-  function registrarRegraCobrancaNoN8n(itemKey, payload) {
-    const item = openTools.find((row) => chaveFerramenta(row) === itemKey);
-    if (!item || !item.NumeroRetirada) return;
-    const win = janela();
-    if (!win.fetch) return;
-
-    win.fetch(WEBHOOK_REGRAS_COBRANCA, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        codigo: item.NumeroRetirada,
-        nome: item.Colaborador || "",
-        produto: item.Produto || "",
-        ...payload
-      })
-    }).catch((error) => {
-      console.warn("Não foi possível registrar a regra de cobrança no n8n.", error);
-    });
-  }
-
-  function controleFerramenta(row) {
-    return controlesCobranca[chaveFerramenta(row)] || {};
-  }
-  function cobrancaPausada(row) {
-    return !deveCobrarFerramenta(row, controlesCobranca, hojeISO());
-  }
-  function statusCobrancaFerramenta(row) {
-    const controle = controleFerramenta(row);
-    if (controle.naoCobrar) {
-      return statusFerramentaBadge("ok", "Sem cobrança");
-    }
-    if (controle.prorrogadoAte && controle.prorrogadoAte >= hojeISO()) {
-      return statusFerramentaBadge("warn", `Prorrogado até ${formatarDataISO(controle.prorrogadoAte)}`);
-    }
-    if (ehItemSemCobrancaAutomatica(row)) {
-      return statusFerramentaBadge("ok", "Uso contínuo");
-    }
-    return statusFerramentaBadge(row.StatusClasse, row.StatusTexto);
-  }
-  function controlesLinhaFerramenta(row) {
-    const code = encodeURIComponent(chaveFerramenta(row));
-    const pausada = cobrancaPausada(row);
-    return `<div class="tool-actions"><button class="btn ghost" type="button" data-action="tools-extend" data-code="${code}" data-days="7">+7 dias</button><button class="btn ghost" type="button" data-action="tools-extend" data-code="${code}" data-days="15">+15 dias</button>${pausada ? `<button class="btn yellow" type="button" data-action="tools-charge" data-code="${code}">Voltar a cobrar</button>` : `<button class="btn yellow" type="button" data-action="tools-no-charge" data-code="${code}">Não cobrar</button>`}</div>`;
+  function normalizarPesquisaFerramentas(txt) {
+    return String(txt || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .trim();
   }
   function ferramentasAbertasFiltradas() {
     let termo = normalizarPesquisaFerramentas(ferramentasBusca);
@@ -276,12 +221,13 @@ export function createToolsModule({
           pior: "ok"
         };
       let p = m[k];
+      const regra = regraOperacional(r);
       p.itens.push(r);
       p.qtd += n(r.QuantidadeEmAberto);
-      if (r.StatusClasse === "danger" && deveCobrarFerramenta(r)) {
+      if (r.StatusClasse === "danger" && !regra.bloqueiaCobranca) {
         p.atrasados += n(r.QuantidadeEmAberto);
         p.pior = "danger";
-      } else if (r.StatusClasse === "warn" && deveCobrarFerramenta(r) && p.pior !== "danger") p.pior = "warn";
+      } else if (r.StatusClasse === "warn" && p.pior !== "danger") p.pior = "warn";
       if (!p.maisAntigaISO || String(r.DataRetiradaISO || "") < p.maisAntigaISO) {
         p.maisAntigaISO = r.DataRetiradaISO || "";
         p.maisAntiga = r.DataRetirada || "";
@@ -298,14 +244,26 @@ export function createToolsModule({
   function statusFerramentaBadge(cls, txt) {
     return `<span class="recommend-badge ${cls === "danger" ? "danger" : cls === "warn" ? "warn" : ""}">${esc(txt)}</span>`;
   }
+  function acoesDevolucao(row) {
+    const key = encodeURIComponent(retiradaKey(row));
+    return `<div class="devolution-actions">
+      <button class="btn ghost" type="button" data-action="tools-snooze" data-key="${key}" data-days="7">+7 dias</button>
+      <button class="btn ghost" type="button" data-action="tools-snooze" data-key="${key}" data-days="15">+15 dias</button>
+      <button class="btn yellow" type="button" data-action="tools-no-charge" data-key="${key}">Não cobrar</button>
+      <button class="btn ghost" type="button" data-action="tools-resume-charge" data-key="${key}">Voltar a cobrar</button>
+    </div>`;
+  }
   function tabelaFerramentasAbertas(arr) {
     let rows = arr
-      .map(
-        (r) =>
-          `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${statusCobrancaFerramenta(r)}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td><td data-label="Cobrança">${controlesLinhaFerramenta(r)}</td></tr>`
-      )
+      .map((r) => {
+        const regra = regraOperacional(r);
+        const situacao = regra.status
+          ? statusFerramentaBadge("warn", regra.status)
+          : statusFerramentaBadge(r.StatusClasse, r.StatusTexto);
+        return `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${situacao}${regra.detalhe ? `<small class="devolution-note">${esc(regra.detalhe)}</small>` : ""}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td><td data-label="Monitoramento">${acoesDevolucao(r)}</td></tr>`;
+      })
       .join("");
-    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th><th>Cobrança</th></tr></thead><tbody>${rows || '<tr><td colspan="8">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
+    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th><th>Monitoramento</th></tr></thead><tbody>${rows || '<tr><td colspan="8">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
   }
   function abrirItensPessoaFerramentas(codigoEnc) {
     let codigo = decodeURIComponent(codigoEnc),
@@ -313,9 +271,8 @@ export function createToolsModule({
         (x) => String(x.codigo) === codigo
       );
     if (!p) return;
-    let atrasados = p.itens.filter(
-      (r) => r.StatusClasse === "danger" && deveCobrarFerramenta(r)
-    );
+    ultimaPessoaAberta = codigo;
+    let atrasados = p.itens.filter((r) => r.StatusClasse === "danger");
     modal.open(
       "Ferramentas com " + p.nome,
       `${fmt(p.qtd)} item(ns) em aberto · ${fmt(atrasados.reduce((a, r) => a + n(r.QuantidadeEmAberto), 0))} atrasado(s)`,
@@ -323,11 +280,9 @@ export function createToolsModule({
     );
   }
   function mensagemWhatsAppFerramentas(p) {
-    let atrasados = montarPlanoCobrancaFerramentas({
-      openTools: p.itens,
-      controlesCobranca,
-      referenceDateISO: hojeISO()
-    });
+    let atrasados = p.itens.filter(
+      (r) => r.StatusClasse === "danger" && !regraOperacional(r).bloqueiaCobranca
+    );
     let linhas = atrasados
       .slice(0, 8)
       .map(
@@ -373,13 +328,13 @@ export function createToolsModule({
     if (!box) return;
     let total = arr.reduce((a, r) => a + n(r.QuantidadeEmAberto), 0),
       atrasados = arr
-        .filter((r) => r.StatusClasse === "danger" && deveCobrarFerramenta(r))
+        .filter((r) => r.StatusClasse === "danger")
         .reduce((a, r) => a + n(r.QuantidadeEmAberto), 0),
       semTelefone = pessoas.filter((p) => p.atrasados > 0 && !p.telefone).length,
       integracao = whatsapp.enabled
         ? `<div class="kpi"><span>Sem telefone</span><br><b>${fmt(semTelefone)}</b></div>`
         : `<div class="kpi kpi-contact"><span>Contato</span><b class="integration-name">n8n</b><small class="integration-status">WhatsApp direto desativado</small></div>`;
-    box.innerHTML = `<div class="panel"><p class="leitura">Mostrando itens que continuam com colaboradores. Rastelos ficam como uso contínuo e não entram na cobrança automática. Use +7/+15 dias ou Não cobrar dentro de “Ver itens” para pausar cobranças sem apagar o histórico.</p><div class="kpis"><div class="kpi"><span>Pessoas com itens</span><br><b>${fmt(pessoas.length)}</b></div><div class="kpi"><span>Itens em aberto</span><br><b>${fmt(total)}</b></div><div class="kpi"><span>Itens para cobrar</span><br><b>${fmt(atrasados)}</b></div>${integracao}</div></div>${pessoas.length ? pessoas.map(cartaoPessoaFerramentas).join("") : `<div class="panel"><h2>Nenhum item encontrado</h2><p class="muted">Não há saldo em aberto para a pesquisa informada.</p></div>`}`;
+    box.innerHTML = `<div class="panel"><p class="leitura">Mostrando somente itens que continuam com colaboradores. O sistema soma as linhas da mesma retirada, desconta devoluções e cancelamentos e exibe apenas o saldo restante.</p><div class="kpis"><div class="kpi"><span>Pessoas com itens</span><br><b>${fmt(pessoas.length)}</b></div><div class="kpi"><span>Itens em aberto</span><br><b>${fmt(total)}</b></div><div class="kpi"><span>Itens atrasados</span><br><b>${fmt(atrasados)}</b></div>${integracao}</div></div>${pessoas.length ? pessoas.map(cartaoPessoaFerramentas).join("") : `<div class="panel"><h2>Nenhum item encontrado</h2><p class="muted">Não há saldo em aberto para a pesquisa informada.</p></div>`}`;
   }
   function limparPesquisaFerramentas() {
     ferramentasBusca = "";
@@ -392,74 +347,75 @@ export function createToolsModule({
   }
   function renderFerramentas() {
     documentRef.getElementById("genericTitle").textContent =
-      "Equipamentos devolvíveis com colaboradores";
+      "Monitoramento de devoluções";
     documentRef.getElementById("genericSub").textContent =
-      "Mostra apenas equipamentos que precisam retornar. Ferramentas fixas e materiais de consumo ficam fora da contagem.";
+      "Controle os prazos, pause cobranças e prorrogue devoluções antes da automação enviar mensagens.";
     documentRef.getElementById("genericContent").innerHTML =
-      `<div class="panel"><h2>Pesquisar colaborador ou ferramenta</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento. Itens devolvidos, ferramentas fixas e materiais de consumo não aparecem.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
+      `<div class="panel"><h2>Aba Devolução</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento. Use os botões de monitoramento para prorrogar prazo ou impedir cobrança automática.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
     atualizarPesquisaFerramentas();
   }
-  function atualizarModalPessoaPorItemKey(itemKey) {
-    const item = openTools.find((row) => chaveFerramenta(row) === itemKey);
-    if (item) abrirItensPessoaFerramentas(encodeURIComponent(item.CodigoCliente || item.Colaborador || "Não informado"));
+
+  function rowByKey(key) {
+    return openTools.find((row) => retiradaKey(row) === key);
   }
-  function prorrogarFerramenta(itemKeyEnc, dias) {
-    const itemKey = decodeURIComponent(itemKeyEnc);
-    controlesCobranca[itemKey] = {
-      ...controlesCobranca[itemKey],
-      naoCobrar: false,
-      prorrogadoAte: somarDiasISO(dias)
-    };
-    salvarControlesCobranca();
-    registrarRegraCobrancaNoN8n(itemKey, {
-      acao: "prorrogar",
-      dias: Number(dias || 0),
-      prorrogado_ate: controlesCobranca[itemKey].prorrogadoAte
+
+  async function enviarRegraN8n(row, payload) {
+    if (!window.fetch) return;
+    await window.fetch(WEBHOOK_REGRAS_COBRANCA, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        numero_retirada: row.NumeroRetirada,
+        codigo: row.NumeroRetirada,
+        colaborador: row.Colaborador,
+        telefone: row.TelefoneWhatsApp,
+        produto: row.Produto,
+        ...payload
+      })
     });
-    atualizarPesquisaFerramentas();
-    atualizarModalPessoaPorItemKey(itemKey);
   }
-  function naoCobrarFerramenta(itemKeyEnc) {
-    const itemKey = decodeURIComponent(itemKeyEnc);
-    controlesCobranca[itemKey] = {
-      ...controlesCobranca[itemKey],
-      naoCobrar: true,
-      prorrogadoAte: ""
-    };
-    salvarControlesCobranca();
-    registrarRegraCobrancaNoN8n(itemKey, { acao: "nao_cobrar" });
-    atualizarPesquisaFerramentas();
-    atualizarModalPessoaPorItemKey(itemKey);
+
+  function atualizarModalAberto() {
+    if (!ultimaPessoaAberta) return;
+    abrirItensPessoaFerramentas(encodeURIComponent(ultimaPessoaAberta));
   }
-  function voltarCobrarFerramenta(itemKeyEnc) {
-    const itemKey = decodeURIComponent(itemKeyEnc);
-    delete controlesCobranca[itemKey];
-    salvarControlesCobranca();
+
+  async function atualizarRegraCobranca(keyEnc, acao, dias = 0) {
+    const key = decodeURIComponent(keyEnc || "");
+    const row = rowByKey(key);
+    if (!row) return;
+
+    const regras = lerRegrasLocais();
+    const payload = { acao };
+
+    if (acao === "prorrogar") {
+      payload.dias = Number(dias || 7);
+      payload.prorrogado_ate = somarDiasISO(payload.dias);
+      regras[key] = { acao, prorrogadoAte: payload.prorrogado_ate };
+    } else if (acao === "nao_cobrar") {
+      regras[key] = { acao };
+    } else {
+      delete regras[key];
+    }
+
+    salvarRegrasLocais(regras);
     atualizarPesquisaFerramentas();
-    atualizarModalPessoaPorItemKey(itemKey);
+    atualizarModalAberto();
+
+    if (acao !== "voltar_cobrar") {
+      await enviarRegraN8n(row, payload);
+    }
   }
 
   function getHomeMetrics() {
     const people = agruparFerramentasPorPessoa(openTools);
-    const ferramentasParaCobrar = montarPlanoCobrancaFerramentas({
-      openTools,
-      controlesCobranca,
-      referenceDateISO: hojeISO()
-    });
     return {
       quantity: openTools.reduce((total, row) => total + n(row.QuantidadeEmAberto), 0),
       people: people.length,
-      overdue: ferramentasParaCobrar
+      overdue: openTools
+        .filter((row) => row.StatusClasse === "danger")
         .reduce((total, row) => total + n(row.QuantidadeEmAberto), 0)
     };
-  }
-
-  function getAutomationChargePlan() {
-    return montarPlanoCobrancaFerramentas({
-      openTools,
-      controlesCobranca,
-      referenceDateISO: hojeISO()
-    });
   }
 
   return Object.freeze({
@@ -468,10 +424,9 @@ export function createToolsModule({
     clear: limparPesquisaFerramentas,
     viewPerson: abrirItensPessoaFerramentas,
     openWhatsApp: abrirWhatsAppFerramentas,
-    extend: prorrogarFerramenta,
-    noCharge: naoCobrarFerramenta,
-    charge: voltarCobrarFerramenta,
-    getHomeMetrics,
-    getAutomationChargePlan
+    snooze: (key, days) => atualizarRegraCobranca(key, "prorrogar", days),
+    noCharge: (key) => atualizarRegraCobranca(key, "nao_cobrar"),
+    resumeCharge: (key) => atualizarRegraCobranca(key, "voltar_cobrar"),
+    getHomeMetrics
   });
 }
