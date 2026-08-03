@@ -79,7 +79,9 @@ test("módulos principais renderizam com massa sintética", () => {
     bagsPerPackage: selectors.metadata.bagsPerPackage
   });
   const modal = {
-    open() {},
+    open(_title, _sub, body) {
+      documentRef.getElementById("modalBody").innerHTML = body;
+    },
     close() {}
   };
   const whatsapp = {
@@ -138,4 +140,9 @@ test("módulos principais renderizam com massa sintética", () => {
   const toolLocationHtml = documentRef.getElementById("ferramentasLocalizacao").innerHTML;
   assert.match(toolLocationHtml, /COLABORADOR TESTE/);
   assert.match(toolLocationHtml, /Almoxarifado/);
+  tools.viewPerson("COL-TESTE");
+  const toolsHtml = documentRef.getElementById("modalBody").innerHTML;
+  assert.match(toolsHtml, /Monitoramento/);
+  assert.match(toolsHtml, /\+7 dias/);
+  assert.match(toolsHtml, /Não cobrar/);
 });
