@@ -11,6 +11,10 @@ import {
 } from "../src/core/formatters.js";
 import { createDataSelectors } from "../src/core/data-selectors.js";
 import { demoDashboardData } from "../data/dashboard-data.demo.js";
+import {
+  chaveFerramenta,
+  montarPlanoCobrancaFerramentas
+} from "../src/modules/tools.js";
 
 test("formatadores mantêm datas e somas previsíveis", () => {
   assert.equal(formatBrazilianDate("2026-07-10"), "10/07/2026");
@@ -106,4 +110,63 @@ test("média mensal considera meses com consumo e identifica o maior mês", () =
     value: 500,
     projected: false
   });
+});
+
+test("plano de cobrança ignora rastelo, prorrogação e não cobrar", () => {
+  const escada = {
+    NumeroRetirada: "1",
+    CodigoProduto: "10",
+    CodigoCliente: "100",
+    Colaborador: "Colaborador A",
+    Produto: "ESCADA DE ALUMINIO",
+    CategoriaEstoque: "ESCADA",
+    QuantidadeEmAberto: 1,
+    StatusClasse: "danger"
+  };
+  const rastelo = {
+    NumeroRetirada: "2",
+    CodigoProduto: "20",
+    CodigoCliente: "200",
+    Colaborador: "Colaborador B",
+    Produto: "RASTELO",
+    CategoriaEstoque: "FERRAMENTA",
+    QuantidadeEmAberto: 1,
+    StatusClasse: "danger"
+  };
+  const furadeira = {
+    NumeroRetirada: "3",
+    CodigoProduto: "30",
+    CodigoCliente: "300",
+    Colaborador: "Colaborador C",
+    Produto: "FURADEIRA",
+    CategoriaEstoque: "FERRAMENTAS ELETRICAS",
+    QuantidadeEmAberto: 1,
+    StatusClasse: "danger"
+  };
+  const martelete = {
+    NumeroRetirada: "4",
+    CodigoProduto: "40",
+    CodigoCliente: "400",
+    Colaborador: "Colaborador D",
+    Produto: "MARTELETE",
+    CategoriaEstoque: "FERRAMENTAS ELETRICAS",
+    QuantidadeEmAberto: 1,
+    StatusClasse: "danger"
+  };
+
+  const controles = {
+    [chaveFerramenta(furadeira)]: { prorrogadoAte: "2026-08-10" },
+    [chaveFerramenta(martelete)]: { naoCobrar: true }
+  };
+
+  const plano = montarPlanoCobrancaFerramentas({
+    openTools: [escada, rastelo, furadeira, martelete],
+    controlesCobranca: controles,
+    referenceDateISO: "2026-08-03"
+  });
+
+  assert.deepEqual(
+    plano.map((row) => row.Produto),
+    ["ESCADA DE ALUMINIO"]
+  );
 });
