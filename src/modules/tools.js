@@ -260,10 +260,10 @@ export function createToolsModule({
         const situacao = regra.status
           ? statusFerramentaBadge("warn", regra.status)
           : statusFerramentaBadge(r.StatusClasse, r.StatusTexto);
-        return `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${situacao}${regra.detalhe ? `<small class="devolution-note">${esc(regra.detalhe)}</small>` : ""}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td><td data-label="Monitoramento">${acoesDevolucao(r)}</td></tr>`;
+        return `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${situacao}${regra.detalhe ? `<small class="devolution-note">${esc(regra.detalhe)}</small>` : ""}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td></tr>`;
       })
       .join("");
-    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th><th>Monitoramento</th></tr></thead><tbody>${rows || '<tr><td colspan="8">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
+    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
   }
   function abrirItensPessoaFerramentas(codigoEnc) {
     let codigo = decodeURIComponent(codigoEnc),
@@ -347,11 +347,11 @@ export function createToolsModule({
   }
   function renderFerramentas() {
     documentRef.getElementById("genericTitle").textContent =
-      "Monitoramento";
+      "Ferramentas";
     documentRef.getElementById("genericSub").textContent =
-      "Controle os prazos, pause cobranças e prorrogue devoluções antes da automação enviar mensagens.";
+      "Equipamentos devolvíveis que continuam com colaboradores.";
     documentRef.getElementById("genericContent").innerHTML =
-      `<div class="panel"><h2>Aba Devolução</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento. Use os botões de monitoramento para prorrogar prazo ou impedir cobrança automática.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
+      `<div class="panel"><h2>Equipamentos devolvíveis</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
     atualizarPesquisaFerramentas();
   }
 
