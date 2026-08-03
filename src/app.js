@@ -5,7 +5,7 @@ import { createNavigation } from "./core/navigation.js";
 import { createModal } from "./core/modal.js";
 import { createDownloadService } from "./services/download-service.js";
 import { createWhatsAppService } from "./services/whatsapp-service.js";
-import { createToolsModule } from "./modules/tools.js?v=20260803-devolucao-monitoramento1";
+import { createToolsModule } from "./modules/tools.js?v=20260803-monitoramento-restore1";
 import { createBootsModule } from "./modules/boots.js";
 import { createBagsModule } from "./modules/bags.js";
 import { createGenericModule } from "./modules/generic.js";
