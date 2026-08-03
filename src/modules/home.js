@@ -23,7 +23,7 @@ export function createHomeModule({ selectors, tools, documentRef = document }) {
           <div class="card" role="button" tabindex="0"
                data-action="open-category" data-category="Ferramentas">
             <span class="icon">${icon}</span>
-            <h2>Ferramentas</h2>
+            <h2>Monitoramento de devoluções</h2>
             <p class="muted">
               Equipamentos devolvíveis que continuam com colaboradores.
             </p>
@@ -56,14 +56,7 @@ export function createHomeModule({ selectors, tools, documentRef = document }) {
           </div>
         </div>
       `;
-    }).join("") + `
-      <div class="card" role="button" tabindex="0"
-           data-action="open-monitoring">
-        <span class="icon">&#128202;</span>
-        <h2>Monitoramento</h2>
-        <p class="muted">Notificações e devoluções</p>
-      </div>
-    `;
+    }).join("");
   }
 
   return Object.freeze({ render });
