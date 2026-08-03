@@ -163,16 +163,24 @@ button,
   flex-wrap: wrap;
   align-items: center;
 }
-.tool-actions {
+.devolution-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   min-width: 220px;
 }
-.tool-actions .btn {
-  box-shadow: none;
+.devolution-actions .btn {
+  min-height: 36px;
   padding: 8px 10px;
+  border-radius: 9px;
   font-size: 12px;
+  box-shadow: none;
+}
+.devolution-note {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-weight: 800;
 }
 .grid {
   display: grid;
@@ -3232,6 +3240,16 @@ select:focus-visible {
     content: attr(data-label);
     color: var(--muted);
     font-weight: 900;
+  }
+
+  .devolution-actions {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .devolution-actions .btn {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 120px;
   }
 
   .barrow {
