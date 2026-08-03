@@ -5,7 +5,7 @@ import { createNavigation } from "./core/navigation.js";
 import { createModal } from "./core/modal.js";
 import { createDownloadService } from "./services/download-service.js";
 import { createWhatsAppService } from "./services/whatsapp-service.js";
-import { createToolsModule } from "./modules/tools.js?v=20260720-tools-location1";
+import { createToolsModule } from "./modules/tools.js?v=20260803-devolucao-monitoramento1";
 import { createBootsModule } from "./modules/boots.js";
 import { createBagsModule } from "./modules/bags.js";
 import { createGenericModule } from "./modules/generic.js";
@@ -108,9 +108,6 @@ export function createDashboardApp(payload, documentRef = document) {
       case "open-category":
         openCategory(element.dataset.category);
         break;
-      case "open-monitoring":
-        documentRef.defaultView.location.assign("monitoramento.html");
-        break;
       case "navigate-home":
         navigation.showSection("home");
         break;
@@ -126,14 +123,14 @@ export function createDashboardApp(payload, documentRef = document) {
       case "tools-view-person":
         tools.viewPerson(element.dataset.code);
         break;
-      case "tools-extend":
-        tools.extend(element.dataset.code, element.dataset.days);
+      case "tools-snooze":
+        tools.snooze(element.dataset.key, element.dataset.days);
         break;
       case "tools-no-charge":
-        tools.noCharge(element.dataset.code);
+        tools.noCharge(element.dataset.key);
         break;
-      case "tools-charge":
-        tools.charge(element.dataset.code);
+      case "tools-resume-charge":
+        tools.resumeCharge(element.dataset.key);
         break;
       case "tools-clear":
         tools.clear();
