@@ -1,5 +1,6 @@
 import datetime as dt
 import unittest
+from unittest.mock import patch
 
 from scripts import atualizar_dashboard
 
@@ -23,12 +24,14 @@ class PayloadTests(unittest.TestCase):
             }
         ]
 
-        payload = atualizar_dashboard.build_payload(
-            data,
-            stock,
-            open_tools,
-            dt.datetime(2026, 7, 10, 12, 0, 0),
-        )
+        with patch.object(atualizar_dashboard, "INCLUDE_PERSONAL_DATA", False), \
+             patch.object(atualizar_dashboard, "DIRECT_WHATSAPP_ENABLED", False):
+            payload = atualizar_dashboard.build_payload(
+                data,
+                stock,
+                open_tools,
+                dt.datetime(2026, 7, 10, 12, 0, 0),
+            )
 
         self.assertEqual(payload["schemaVersion"], 2)
         self.assertEqual(payload["metadata"]["operatingYear"], 2026)
@@ -215,7 +218,8 @@ class PayloadTests(unittest.TestCase):
                 "Qtde_num": 1,
             }
         ]
-        public_rows = atualizar_dashboard._public_withdrawals(rows)
+        with patch.object(atualizar_dashboard, "INCLUDE_PERSONAL_DATA", False):
+            public_rows = atualizar_dashboard._public_withdrawals(rows)
         self.assertNotEqual(public_rows[0]["Requisitante"], "NOME REAL TESTE")
         self.assertTrue(public_rows[0]["Requisitante"].startswith("Colaborador "))
         self.assertNotEqual(public_rows[0]["Nº Retirada"], "12345")

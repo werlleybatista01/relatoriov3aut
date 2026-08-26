@@ -6,6 +6,54 @@ import { escapeHtml, formatNumber, toNumber } from "../core/formatters.js";
  * A classificação e o cálculo do saldo são realizados no Python.
  * Este módulo apenas filtra, agrupa e apresenta os saldos já consolidados.
  */
+export function normalizarPesquisaFerramentas(txt) {
+  return String(txt || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function chaveFerramenta(row) {
+  return [
+    row.NumeroRetirada || "",
+    row.CodigoProduto || "",
+    row.CodigoCliente || "",
+    row.Produto || ""
+  ].join("|");
+}
+
+export function ehItemSemCobrancaAutomatica(row) {
+  const texto = normalizarPesquisaFerramentas(
+    [row.Produto, row.CategoriaEstoque].join(" ")
+  );
+  return ["rastelo"].some((item) => texto.includes(item));
+}
+
+export function deveCobrarFerramenta(row, controlesCobranca = {}, referenceDateISO = "") {
+  const controle = controlesCobranca[chaveFerramenta(row)] || {};
+  const hoje = referenceDateISO || new Date().toISOString().slice(0, 10);
+
+  if (controle.naoCobrar) return false;
+  if (controle.prorrogadoAte && controle.prorrogadoAte >= hoje) return false;
+  if (ehItemSemCobrancaAutomatica(row)) return false;
+
+  return true;
+}
+
+export function montarPlanoCobrancaFerramentas({
+  openTools,
+  controlesCobranca = {},
+  referenceDateISO = "",
+  onlyOverdue = true
+}) {
+  return (openTools || []).filter((row) => {
+    if (onlyOverdue && row.StatusClasse !== "danger") return false;
+    return deveCobrarFerramenta(row, controlesCobranca, referenceDateISO);
+  });
+}
+
 export function createToolsModule({
   selectors,
   modal,
@@ -112,14 +160,6 @@ export function createToolsModule({
     return { bloqueiaCobranca: false, status: "", detalhe: "" };
   }
 
-  function normalizarPesquisaFerramentas(txt) {
-    return String(txt || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim();
-  }
   function ferramentasAbertasFiltradas() {
     let termo = normalizarPesquisaFerramentas(ferramentasBusca);
     const rows = openTools.filter((r) => !isSaidaDefinitiva(r));

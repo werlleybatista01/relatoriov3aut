@@ -2234,6 +2234,45 @@ def validate_regression(
         )
 
 
+def validate_live_data_regression(
+    state: Dict[str, Any],
+    last_data_date: str,
+    record_count: int,
+) -> None:
+    previous_data_date = parse_iso_date(state.get("last_data_date"))
+    current_data_date = parse_iso_date(last_data_date)
+    if (
+        previous_data_date
+        and current_data_date
+        and current_data_date < previous_data_date
+        and not ALLOW_BACKUP_REGRESSION
+    ):
+        raise RuntimeError(
+            "REGRESSÃO BLOQUEADA: a última movimentação do banco atual é "
+            f"{current_data_date:%d/%m/%Y}, mas o dashboard já havia "
+            f"processado movimentações até {previous_data_date:%d/%m/%Y}."
+        )
+
+    try:
+        previous_count = int(state.get("records") or state.get("record_count") or 0)
+    except Exception:
+        previous_count = 0
+
+    if previous_count > 0 and record_count < previous_count:
+        drop = (previous_count - record_count) / previous_count * 100
+        if drop > MAX_RECORD_DROP_PERCENT and not ALLOW_RECORD_DROP:
+            raise RuntimeError(
+                "QUEDA DE DADOS BLOQUEADA: os registros caíram de "
+                f"{previous_count} para {record_count} "
+                f"({drop:.1f}%). Para autorizar conscientemente, use "
+                "ALLOW_RECORD_DROP=true no config.env."
+            )
+        log(
+            "AVISO: a quantidade de registros caiu de "
+            f"{previous_count} para {record_count} ({drop:.1f}%)."
+        )
+
+
 def run_git(
     args: List[str],
     *,
@@ -2631,6 +2670,13 @@ def main() -> int:
                 )
 
             original_html = INDEX_PATH.read_text(encoding="utf-8")
+            if not re.search(r"\bconst\s+ESTOQUE\s*=", original_html):
+                log(
+                    "Detectado index.html no formato modular V2 (sem const ESTOQUE). "
+                    "Redirecionando execução para scripts.atualizar_dashboard..."
+                )
+                from scripts import atualizar_dashboard
+                return atualizar_dashboard.main()
             new_hash = payload_hash(data, stock, open_tools)
             old_hash = current_html_payload_hash(original_html)
             today = dt.date.today().isoformat()

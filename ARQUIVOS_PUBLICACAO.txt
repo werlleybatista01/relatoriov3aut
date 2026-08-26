@@ -13,6 +13,7 @@ README.md
 assets/css/style.css
 assets/images/logo.jpg
 atualizar_agora.bat
+atualizar_dashboard_invisivel.vbs
 atualizar_silencioso.bat
 classificacao_ferramentas.example.json
 config.example.env
@@ -36,6 +37,7 @@ iniciar_homologacao.bat
 instalar_producao.bat
 instalar_tarefa_producao_APOS_APROVACAO.bat
 instalar_tarefa_windows.bat
+monitoramento.html
 package-lock.json
 package.json
 prettier.config.js
@@ -43,7 +45,9 @@ produtos_pendentes_classificacao.example.csv
 requirements.txt
 restaurar_automacao_anterior.bat
 scripts/__init__.py
+scripts/access_readonly.py
 scripts/atualizar_dashboard.py
+scripts/check_syntax.js
 scripts/diagnosticar_ambiente.py
 scripts/gerenciar_tarefas_producao.ps1
 scripts/garantir_frontend_modular.bat

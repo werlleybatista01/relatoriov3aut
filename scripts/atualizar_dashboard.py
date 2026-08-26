@@ -1,17 +1,17 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
-Atualizador do dashboard modular â€” versÃ£o 2.0.0 de produÃ§Ã£o.
+Atualizador do dashboard modular — versão 2.0.0 de produção.
 
 Responsabilidades deste arquivo:
-1. Ler o backup Access por meio da lÃ³gica jÃ¡ validada na V9.
-2. Aplicar as mesmas regras de negÃ³cio de retiradas, estoque e ferramentas.
+1. Ler o backup Access por meio da lógica já validada na V9.
+2. Aplicar as mesmas regras de negócio de retiradas, estoque e ferramentas.
 3. Gerar somente os artefatos de dados:
    - data/dashboard-data.js
    - downloads/relatorio_almoxarifado_<ano>.xlsx
 4. Publicar apenas esses artefatos no Git, quando habilitado.
 
-O HTML, o CSS e os mÃ³dulos JavaScript permanecem estÃ¡veis. Isso elimina a
-substituiÃ§Ã£o de blocos de cÃ³digo dentro do index.html.
+O HTML, o CSS e os módulos JavaScript permanecem estáveis. Isso elimina a
+substituição de blocos de código dentro do index.html.
 """
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -64,17 +65,17 @@ ACCESS_DB_PASSWORD = (
 
 
 def _relative_repo_path(path: Path) -> str:
-    """Retorna o caminho relativo ao repositÃ³rio ou interrompe a publicaÃ§Ã£o."""
+    """Retorna o caminho relativo ao repositório ou interrompe a publicação."""
     try:
         return path.resolve().relative_to(legacy.REPO_DIR.resolve()).as_posix()
     except ValueError as exc:
         raise RuntimeError(
-            f"O arquivo precisa estar dentro do repositÃ³rio: {path}"
+            f"O arquivo precisa estar dentro do repositório: {path}"
         ) from exc
 
 
 def _atomic_write_bytes(path: Path, content: bytes) -> None:
-    """Grava bytes de forma atÃ´mica para evitar arquivos parcialmente escritos."""
+    """Grava bytes de forma atômica para evitar arquivos parcialmente escritos."""
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(path.suffix + ".tmp")
     temp.write_bytes(content)
@@ -82,7 +83,7 @@ def _atomic_write_bytes(path: Path, content: bytes) -> None:
 
 
 def _atomic_write_text(path: Path, content: str) -> None:
-    """Grava texto UTF-8 de forma atÃ´mica."""
+    """Grava texto UTF-8 de forma atômica."""
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(path.suffix + ".tmp")
     temp.write_text(content, encoding="utf-8")
@@ -112,7 +113,7 @@ def _date_range(rows: List[Dict[str, Any]]) -> Tuple[str, str]:
 
 
 def _stable_alias(value: Any, prefix: str = "Colaborador") -> str:
-    """Cria um identificador estÃ¡vel sem revelar o nome original."""
+    """Cria um identificador estável sem revelar o nome original."""
     text = str(value or "").strip()
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:8]
     return f"{prefix} {digest.upper()}"
@@ -122,10 +123,10 @@ def _public_withdrawals(
     rows: List[Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
     """
-    Remove dados pessoais quando o perfil pÃºblico estÃ¡ ativado.
+    Remove dados pessoais quando o perfil público está ativado.
 
-    A aplicaÃ§Ã£o continua conseguindo agrupar registros porque os apelidos sÃ£o
-    determinÃ­sticos. Para conferÃªncia nominal em homologaÃ§Ã£o privada, use
+    A aplicação continua conseguindo agrupar registros porque os apelidos são
+    determinísticos. Para conferência nominal em homologação privada, use
     INCLUDE_PERSONAL_DATA=true mantendo GIT_PUSH=false.
     """
     if INCLUDE_PERSONAL_DATA:
@@ -135,12 +136,12 @@ def _public_withdrawals(
     for row in rows:
         item = dict(row)
         original_name = item.get("Requisitante")
-        withdrawal_number = item.get("NÂº Retirada")
+        withdrawal_number = item.get("Nº Retirada")
         item["Requisitante"] = _stable_alias(original_name)
-        item["ResponsÃ¡vel pelo Registro"] = ""
-        item["ObservaÃ§Ã£o"] = ""
+        item["Responsável pelo Registro"] = ""
+        item["Observação"] = ""
         if withdrawal_number:
-            item["NÂº Retirada"] = _stable_alias(
+            item["Nº Retirada"] = _stable_alias(
                 withdrawal_number,
                 prefix="RET-",
             ).replace(" ", "")
@@ -152,10 +153,10 @@ def _public_open_tools(
     rows: List[Dict[str, Any]],
 ) -> List[Dict[str, Any]]:
     """
-    Sanitiza saldos em aberto antes de gerar o arquivo pÃºblico.
+    Sanitiza saldos em aberto antes de gerar o arquivo público.
 
-    Telefone sÃ³ pode ser exportado quando o modo direto estiver explicitamente
-    habilitado. Nomes e cÃ³digos sÃ£o pseudonimizados quando dados pessoais estÃ£o
+    Telefone só pode ser exportado quando o modo direto estiver explicitamente
+    habilitado. Nomes e códigos são pseudonimizados quando dados pessoais estão
     desativados.
     """
     sanitized: List[Dict[str, Any]] = []
@@ -188,7 +189,7 @@ def normalize_tool_stock(
     raw_stock: List[Dict[str, Any]],
     classifications: Dict[str, str],
 ) -> List[Dict[str, Any]]:
-    """Inclui no payload o saldo de ferramentas devolvÃ­veis no almoxarifado."""
+    """Inclui no payload o saldo de ferramentas devolvíveis no almoxarifado."""
     grouped: Dict[str, Dict[str, Any]] = {}
 
     for row in raw_stock:
@@ -249,7 +250,7 @@ def validate_security_profile(
     allow_public_personal_data: bool | None = None,
     direct_whatsapp_enabled: bool | None = None,
 ) -> None:
-    """Bloqueia combinaÃ§Ãµes de configuraÃ§Ã£o inseguras."""
+    """Bloqueia combinações de configuração inseguras."""
     git_push = legacy.GIT_PUSH if git_push is None else git_push
     homologation_mode = (
         HOMOLOGATION_MODE
@@ -283,9 +284,9 @@ def validate_security_profile(
         and not allow_public_personal_data
     ):
         raise RuntimeError(
-            "PublicaÃ§Ã£o bloqueada: dados pessoais estÃ£o habilitados. "
+            "Publicação bloqueada: dados pessoais estão habilitados. "
             "Mantenha INCLUDE_PERSONAL_DATA=false ou autorize de forma "
-            "explÃ­cita e documentada."
+            "explícita e documentada."
         )
 
     if direct_whatsapp_enabled and not include_personal_data:
@@ -300,7 +301,7 @@ def build_payload(
     open_tools: List[Dict[str, Any]],
     generated_at: dt.datetime,
 ) -> Dict[str, Any]:
-    """Monta o contrato Ãºnico consumido pelo frontend."""
+    """Monta o contrato único consumido pelo frontend."""
     operating_rows = legacy.operational_data(data)
     if not operating_rows:
         raise RuntimeError(
@@ -335,10 +336,7 @@ def build_payload(
 
 def serialize_payload_js(payload: Dict[str, Any]) -> str:
     """
-    Serializa o payload como ES Module.
-
-    JSON Ã© usado dentro do JavaScript para manter o arquivo determinÃ­stico e
-    simples de validar. O cabeÃ§alho deixa claro que o arquivo Ã© gerado.
+    Serializa o payload como ES Module e global window para compatibilidade local/CORS.
     """
     body = json.dumps(
         payload,
@@ -348,14 +346,15 @@ def serialize_payload_js(payload: Dict[str, Any]) -> str:
     return (
         "/**\n"
         " * Arquivo gerado automaticamente.\n"
-        " * NÃ£o edite manualmente em produÃ§Ã£o.\n"
+        " * Não edite manualmente em produção.\n"
         " */\n"
         f"export const dashboardData = Object.freeze({body});\n"
+        "if (typeof window !== 'undefined') window.dashboardData = dashboardData;\n"
     )
 
 
 def _load_existing_payload(path: Path) -> Dict[str, Any] | None:
-    """LÃª o payload JSON do mÃ³dulo gerado anteriormente, quando disponÃ­vel."""
+    """Lê o payload JSON do módulo gerado anteriormente, quando disponível."""
     if not path.exists():
         return None
     try:
@@ -377,7 +376,7 @@ def _payloads_equivalent_for_publish(
     previous: Dict[str, Any],
     current: Dict[str, Any],
 ) -> bool:
-    """Ignora somente o relÃ³gio; mudanÃ§as reais e a nova data continuam vÃ¡lidas."""
+    """Ignora somente o relógio; mudanças reais e a nova data continuam válidas."""
     previous_copy = json.loads(json.dumps(previous, ensure_ascii=False))
     current_copy = json.loads(json.dumps(current, ensure_ascii=False))
     previous_copy.get("metadata", {}).pop("generatedAt", None)
@@ -385,15 +384,43 @@ def _payloads_equivalent_for_publish(
     return previous_copy == current_copy
 
 
+def _sync_to_desktop_automacao(serialized_js: str, workbook_bytes: bytes) -> None:
+    old_automation = Path.home() / "Desktop" / "automacao"
+    if not (old_automation.exists() and old_automation.is_dir()):
+        return
+    try:
+        source_index = legacy.REPO_DIR / "index.html"
+        if source_index.exists():
+            shutil.copy2(source_index, old_automation / "index.html")
+        (old_automation / "data").mkdir(exist_ok=True)
+        (old_automation / "downloads").mkdir(exist_ok=True)
+        _atomic_write_text(old_automation / "data" / "dashboard-data.js", serialized_js)
+        _atomic_write_bytes(old_automation / "downloads" / DOWNLOAD_FILE.name, workbook_bytes)
+        if (legacy.REPO_DIR / "src").exists():
+            target_src = old_automation / "src"
+            shutil.copytree(legacy.REPO_DIR / "src", target_src, dirs_exist_ok=True)
+        if (legacy.REPO_DIR / "assets").exists():
+            target_assets = old_automation / "assets"
+            shutil.copytree(legacy.REPO_DIR / "assets", target_assets, dirs_exist_ok=True)
+    except Exception as sync_err:
+        legacy.log(f"AVISO: não foi possível sincronizar com Desktop/automacao: {sync_err}")
+
+
 def write_artifacts(
     payload: Dict[str, Any],
     operating_rows: List[Dict[str, Any]],
 ) -> bool:
     """
-    Gera o mÃ³dulo de dados e a planilha.
+    Gera o módulo de dados e a planilha.
 
     Retorna True somente quando pelo menos um artefato mudou.
     """
+    serialized_js = serialize_payload_js(payload)
+    workbook_bytes = base64.b64decode(
+        legacy.make_xlsx_b64(operating_rows)
+    )
+    _sync_to_desktop_automacao(serialized_js, workbook_bytes)
+
     previous_payload = _load_existing_payload(DATA_FILE)
     if (
         previous_payload is not None
@@ -401,7 +428,7 @@ def write_artifacts(
         and _payloads_equivalent_for_publish(previous_payload, payload)
     ):
         legacy.log(
-            "Dados operacionais sem alteraÃ§Ã£o. Artefatos preservados."
+            "Dados operacionais sem alteração. Artefatos preservados."
         )
         return False
 
@@ -410,10 +437,7 @@ def write_artifacts(
         DOWNLOAD_FILE: _file_hash(DOWNLOAD_FILE),
     }
 
-    _atomic_write_text(DATA_FILE, serialize_payload_js(payload))
-    workbook_bytes = base64.b64decode(
-        legacy.make_xlsx_b64(operating_rows)
-    )
+    _atomic_write_text(DATA_FILE, serialized_js)
     _atomic_write_bytes(DOWNLOAD_FILE, workbook_bytes)
 
     after = {
@@ -424,9 +448,9 @@ def write_artifacts(
 
 
 def publish_git() -> bool:
-    """Publica somente dados e planilha; o cÃ³digo visual nÃ£o Ã© reescrito."""
+    """Publica somente dados e planilha; o código visual não é reescrito."""
     if not legacy.GIT_PUSH:
-        legacy.log("GIT_PUSH=false. Envio automÃ¡tico desativado.")
+        legacy.log("GIT_PUSH=false. Envio automático desativado.")
         return False
 
     files = [
@@ -440,15 +464,15 @@ def publish_git() -> bool:
         check=False,
     )
     if staged.returncode == 0:
-        legacy.log("Sem alteraÃ§Ãµes nos artefatos. Nada para enviar.")
+        legacy.log("Sem alterações nos artefatos. Nada para enviar.")
         return False
     if staged.returncode != 1:
         raise RuntimeError(
-            "NÃ£o foi possÃ­vel verificar as alteraÃ§Ãµes preparadas no Git."
+            "Não foi possível verificar as alterações preparadas no Git."
         )
 
     message = (
-        "AtualizaÃ§Ã£o automÃ¡tica dos dados do dashboard - "
+        "Atualização automática dos dados do dashboard - "
         f"{dt.datetime.now():%Y-%m-%d %H:%M:%S}"
     )
     legacy.run_git(["commit", "-m", message])
@@ -492,8 +516,8 @@ def main() -> int:
                 "Tabelas lidas: "
                 f"retiradas={len(raw)} ({method}), "
                 f"estoque={len(raw_stock)} ({stock_method}), "
-                f"devoluÃ§Ãµes={len(raw_returns)} ({returns_method}), "
-                f"exclusÃµes={len(raw_exclusions)} ({exclusions_method}), "
+                f"devoluções={len(raw_returns)} ({returns_method}), "
+                f"exclusões={len(raw_exclusions)} ({exclusions_method}), "
                 f"clientes={len(raw_clients)} ({clients_method})"
             )
 
@@ -517,7 +541,7 @@ def main() -> int:
 
             if not data:
                 raise RuntimeError(
-                    "Nenhum registro vÃ¡lido foi encontrado em TBRetiradas."
+                    "Nenhum registro válido foi encontrado em TBRetiradas."
                 )
 
             dates = [
@@ -549,8 +573,8 @@ def main() -> int:
             legacy.log(
                 f"Registros operacionais: {len(operating_rows)}; "
                 f"ferramentas abertas: {len(open_tools)}; "
-                f"nÃ£o classificados pendentes: {len(pending)}; "
-                f"linhas removidas da visÃ£o de consumo: {removed}"
+                f"não classificados pendentes: {len(pending)}; "
+                f"linhas removidas da visão de consumo: {removed}"
             )
 
             legacy.save_state(
