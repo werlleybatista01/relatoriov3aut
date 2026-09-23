@@ -122,6 +122,16 @@ export function createBootsHubModule({ selectors, modal, documentRef = document 
   }
 
   function setFilter(value) { filter = decodeURIComponent(value || "todos"); render(); }
+  function openPerson(value) {
+    const nome = decodeURIComponent(value || "");
+    const rows = selectors.byCategory("Botinas").filter(r => (r.Requisitante || "Não informado") === nome);
+    const total = rows.reduce((a, r) => a + n(r.Qtde_num), 0);
+    modal.open(
+      "Retiradas de botinas · " + esc(nome),
+      `${fmt(total)} par(es) em ${fmt(rows.length)} registro(s)`,
+      `<div class="panel"><h3>Histórico</h3><div class="tablewrap"><table><thead><tr><th>Data</th><th>Modelo</th><th>Tamanho</th><th>Quantidade</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.Data_fmt || r.Data_iso || "—")}</td><td>${esc(model(r))}</td><td>${esc(size(r))}</td><td>${fmt(n(r.Qtde_num))}</td></tr>`).join("") || "<tr><td colspan='4'>Sem retiradas.</td></tr>"}</tbody></table></div></div>`
+    );
+  }
 
-  return Object.freeze({ render, setFilter, openItem });
+  return Object.freeze({ render, setFilter, openItem, openPerson });
 }
