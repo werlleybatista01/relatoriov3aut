@@ -6,7 +6,7 @@ import { createModal } from "./core/modal.js";
 import { createDownloadService } from "./services/download-service.js";
 import { createWhatsAppService } from "./services/whatsapp-service.js";
 import { createToolsModule } from "./modules/tools.js?v=20260803-monitoramento-restore1";
-import { createBootsHubModule } from "./modules/boots-hub.js";
+import { createBootsModule } from "./modules/boots.js";
 import { createBagsModule } from "./modules/bags.js";
 import { createGenericModule } from "./modules/generic.js";
 import { createHomeModule } from "./modules/home.js?v=20260803-monitoramento-original2";
@@ -38,7 +38,7 @@ export function createDashboardApp(payload, documentRef = document) {
     documentRef
   });
 
-  const boots = createBootsHubModule({
+  const boots = createBootsModule({
     selectors,
     components,
     modal,
