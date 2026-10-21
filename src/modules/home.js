@@ -23,9 +23,9 @@ export function createHomeModule({ selectors, tools, documentRef = document }) {
           <div class="card" role="button" tabindex="0"
                data-action="open-category" data-category="Ferramentas">
             <span class="icon">${icon}</span>
-            <h2>Ferramentas</h2>
+            <h2>Itens Permanentes</h2>
             <p class="muted">
-              Equipamentos devolvíveis que continuam com colaboradores.
+              Ferramentas e equipamentos reutilizáveis que precisam ser devolvidos ao almoxarifado.
             </p>
             <div class="chips">
               <span class="chip">${formatNumber(toolMetrics.quantity)} itens em aberto</span>
