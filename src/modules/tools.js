@@ -408,11 +408,11 @@ export function createToolsModule({
   }
   function renderFerramentas() {
     documentRef.getElementById("genericTitle").textContent =
-      "Ferramentas";
+      "Itens Permanentes";
     documentRef.getElementById("genericSub").textContent =
-      "Equipamentos devolvíveis que continuam com colaboradores.";
+      "Controle de ferramentas e equipamentos reutilizáveis que devem retornar ao almoxarifado.";
     documentRef.getElementById("genericContent").innerHTML =
-      `<div class="panel"><h2>Equipamentos devolvíveis</h2><p class="muted">Digite parte do nome da pessoa ou do equipamento.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
+      `<div class="panel"><h2>Itens Permanentes</h2><p class="muted">Equipamentos reutilizáveis retirados por servidores e itens disponíveis no estoque. Pesquise pelo nome do item ou do responsável.</p><div class="tools-search-wrap"><div class="searchbar" style="grid-template-columns:minmax(0,1fr) auto"><input id="ferramentasBuscaNome" type="search" autocomplete="off" placeholder="Ex.: Nilton, martelete, escada..." value="${esc(ferramentasBusca)}" data-input-action="tools-search"><button class="btn ghost" type="button" data-action="tools-clear">Limpar pesquisa</button></div><div id="ferramentasLocalizacao"></div></div></div><div id="ferramentasResultados"></div>`;
     atualizarPesquisaFerramentas();
   }
 
