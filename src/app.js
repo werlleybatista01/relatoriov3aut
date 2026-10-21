@@ -5,11 +5,11 @@ import { createNavigation } from "./core/navigation.js";
 import { createModal } from "./core/modal.js";
 import { createDownloadService } from "./services/download-service.js";
 import { createWhatsAppService } from "./services/whatsapp-service.js";
-import { createToolsModule } from "./modules/tools.js?v=20260803-monitoramento-restore1";
+import { createToolsModule } from "./modules/tools.js?v=20261021-itens-permanentes1";
 import { createBootsModule } from "./modules/boots.js?v=20260923-safe-restore";
 import { createBagsModule } from "./modules/bags.js";
 import { createGenericModule } from "./modules/generic.js";
-import { createHomeModule } from "./modules/home.js?v=20260803-monitoramento-original2";
+import { createHomeModule } from "./modules/home.js?v=20261021-itens-permanentes1";
 
 /**
  * Compõe os módulos da aplicação.
