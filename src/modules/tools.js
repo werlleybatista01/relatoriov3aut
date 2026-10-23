@@ -209,7 +209,7 @@ export function createToolsModule({
       product: row.Produto,
       quantity: n(row.QuantidadeEmAberto),
       holder: row.Colaborador || "Não informado",
-      detail: row.DataRetirada ? `Retirada em ${row.DataRetirada}` : "Com colaborador",
+      detail: "Com colaborador",
       statusClass: row.StatusClasse,
       statusText: row.StatusTexto || row.Status || "Com colaborador"
     }));
@@ -235,7 +235,7 @@ export function createToolsModule({
           product: nomeEstoqueFerramenta(row),
           quantity: available,
           holder: "Almoxarifado",
-          detail: "Disponível no estoque",
+          detail: "Disponível para retirada",
           statusClass: "stock",
           statusText: "Disponível"
         });
@@ -321,10 +321,10 @@ export function createToolsModule({
         const situacao = regra.status
           ? statusFerramentaBadge("warn", regra.status)
           : statusFerramentaBadge(r.StatusClasse, r.StatusTexto);
-        return `<tr><td data-label="Ferramenta">${esc(r.Produto)}</td><td data-label="Qtd. com a pessoa"><b>${fmt(r.QuantidadeEmAberto)}</b></td><td data-label="Retirada">${esc(r.DataRetirada)}</td><td data-label="Prazo">${esc(r.PrazoDevolucao)}</td><td data-label="Dias com o colaborador">${fmt(r.DiasFora)} dias</td><td data-label="Situação">${situacao}${regra.detalhe ? `<small class="devolution-note">${esc(regra.detalhe)}</small>` : ""}</td><td data-label="Nº retirada">${esc(r.NumeroRetirada)}</td></tr>`;
+        return `<tr><td data-label="Ferramenta"><span class="permanent-item-name">${esc(r.Produto)}</span></td><td data-label="Quantidade"><span class="permanent-quantity">${fmt(r.QuantidadeEmAberto)}</span></td><td data-label="Situação"><div class="permanent-status">${situacao}${regra.detalhe ? `<small class="devolution-note">${esc(regra.detalhe)}</small>` : ""}</div></td><td data-label="Nº retirada">${esc(r.NumeroRetirada || "—")}</td></tr>`
       })
       .join("");
-    return `<div class="tablewrap"><table><thead><tr><th>Ferramenta</th><th>Qtd. com a pessoa</th><th>Retirada</th><th>Prazo</th><th>Dias com o colaborador</th><th>Situação</th><th>Nº retirada</th></tr></thead><tbody>${rows || '<tr><td colspan="7">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
+    return `<div class="tablewrap permanent-table-wrap"><table class="permanent-items-table"><thead><tr><th>Ferramenta / equipamento</th><th>Quantidade</th><th>Situação</th><th>Nº retirada</th></tr></thead><tbody>${rows || '<tr><td colspan="4">Nenhum item em aberto.</td></tr>'}</tbody></table></div>`;
   }
   function abrirItensPessoaFerramentas(codigoEnc) {
     let codigo = decodeURIComponent(codigoEnc),
@@ -369,14 +369,17 @@ export function createToolsModule({
     });
   }
   function cartaoPessoaFerramentas(p) {
-    let temAtraso = p.atrasados > 0,
-      acao =
-        temAtraso && whatsapp.enabled
-          ? p.telefone
-            ? `<button class="btn green" type="button" data-action="tools-whatsapp" data-code="${encodeURIComponent(p.codigo)}">WhatsApp</button>`
-            : `<button class="btn ghost" type="button" disabled title="Telefone não cadastrado">Sem telefone</button>`
-          : "";
-    return `<div class="panel" style="border-left:6px solid ${p.pior === "danger" ? "var(--critico)" : p.pior === "warn" ? "var(--alerta)" : "var(--ok)"};margin-bottom:12px"><div class="topbar" style="margin-bottom:8px"><div><h3>${esc(p.nome)}</h3><p class="muted">${fmt(p.itens.length)} tipo(s) de item · ${fmt(p.qtd)} unidade(s) em aberto${p.maisAntiga ? ` · retirada mais antiga: ${esc(p.maisAntiga)}` : ""}</p></div><div class="actions">${temAtraso ? statusFerramentaBadge("danger", fmt(p.atrasados) + " atrasado(s)") : statusFerramentaBadge(p.pior, p.pior === "warn" ? "Vence em breve" : "No prazo")}<button class="btn ghost" type="button" data-action="tools-view-person" data-code="${encodeURIComponent(p.codigo)}">Ver itens</button>${acao}</div></div></div>`;
+    const temAtraso = p.atrasados > 0;
+    const acao = temAtraso && whatsapp.enabled
+      ? p.telefone
+        ? `<button class="btn green" type="button" data-action="tools-whatsapp" data-code="${encodeURIComponent(p.codigo)}">WhatsApp</button>`
+        : `<button class="btn ghost" type="button" disabled title="Telefone não cadastrado">Sem telefone</button>`
+      : "";
+    const situacao = temAtraso
+      ? statusFerramentaBadge("danger", fmt(p.atrasados) + " atrasado(s)")
+      : statusFerramentaBadge(p.pior, p.pior === "warn" ? "Vence em breve" : "No prazo");
+    const classe = p.pior === "danger" ? "has-overdue" : p.pior === "warn" ? "has-warning" : "is-ok";
+    return `<article class="panel permanent-person-card ${classe}"><div class="permanent-person-main"><div class="permanent-avatar" aria-hidden="true">${esc(String(p.nome || "?").trim().charAt(0).toUpperCase())}</div><div class="permanent-person-info"><h3>${esc(p.nome)}</h3><p>${fmt(p.itens.length)} tipo(s) de ferramenta · ${fmt(p.qtd)} unidade(s) em aberto</p></div></div><div class="permanent-person-actions"><div class="permanent-person-status">${situacao}</div><div class="actions"><button class="btn ghost" type="button" data-action="tools-view-person" data-code="${encodeURIComponent(p.codigo)}">Ver itens</button>${acao}</div></div></article>`;
   }
   function atualizarPesquisaFerramentas() {
     let input = documentRef.getElementById("ferramentasBuscaNome");
