@@ -85,6 +85,12 @@ export function createDashboardApp(payload, documentRef = document) {
   }
 
   function openCategory(category) {
+    if (category === "Ferramentas") {
+      tools.render();
+      navigation.showSection("generic");
+      return;
+    }
+
     if (category === "Botinas") {
       boots.render();
       navigation.showSection("botinas");
