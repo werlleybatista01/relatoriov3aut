@@ -55,7 +55,7 @@ export function createBootsHubModule({ selectors, modal, documentRef = document 
       x.status = x.estoque <= 0 && x.saidas > 0 ? "Sem estoque" : x.media && x.cobertura <= 1 ? "Crítico" : x.minimo > 0 && x.estoque < x.minimo ? "Abaixo do mínimo" : x.media && x.cobertura < 4 ? "Atenção" : "Normal";
       x.cls = ["Sem estoque", "Crítico"].includes(x.status) ? "danger" : ["Abaixo do mínimo", "Atenção"].includes(x.status) ? "warn" : "ok";
       return x;
-    }).sort((a,b) => ({danger:0,warn:1,ok:2}[a.cls] - ({danger:0,warn:1,ok:2}[b.cls]) || b.saidas - a.saidas || a.modelo.localeCompare(b.modelo) || Number(a.tamanho) - Number(b.tamanho));
+    }).sort((a, b) => ({ danger: 0, warn: 1, ok: 2 })[a.cls] - ({ danger: 0, warn: 1, ok: 2 })[b.cls] || b.saidas - a.saidas || a.modelo.localeCompare(b.modelo) || Number(a.tamanho) - Number(b.tamanho));
   }
 
   function filtered(rows) { return filter === "todos" ? rows : rows.filter(x => x.modelo === filter); }
