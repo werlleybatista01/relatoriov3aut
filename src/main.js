@@ -1,4 +1,4 @@
-import { createDashboardApp } from "./app.js?v=20261021-itens-permanentes2";
+import { createDashboardApp } from "./app.js?v=20261023-layout-sem-datas";
 
 /**
  * Ponto de entrada da aplicação.
